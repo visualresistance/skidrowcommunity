@@ -1,1 +1,399 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Project Name - Interactive Mapping Project</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        /* Page Container */
+        .page-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Left Sidebar Navigation */
+        .side-nav {
+            width: 280px;
+            background: #2c3e50;
+            color: white;
+            padding: 30px 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            left: 0;
+            top: 0;
+        }
+        
+        .side-nav-title {
+            display: block;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #34495e;
+        }
+        
+        .side-nav-title img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .side-nav-container ul {
+            list-style: none;
+        }
+        
+        .side-nav-container > ul > a {
+            text-decoration: none;
+            color: white;
+        }
+        
+        .side-nav-container li {
+            padding: 12px 15px;
+            margin: 5px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .side-nav-container li:hover {
+            background: #34495e;
+        }
+        
+        .side-nav-active {
+            background: #3498db !important;
+            font-weight: bold;
+        }
+        
+        .side-nav-section {
+            font-weight: 600;
+        }
+        
+        .nested-nav {
+            margin-left: 15px;
+            margin-top: 8px;
+        }
+        
+        .nested-nav li {
+            font-size: 0.9em;
+            padding: 8px 12px;
+        }
+        
+        /* Main Content Area */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            background: white;
+        }
+        
+        /* Top Navigation Bar */
+        .top-nav {
+            background: #ecf0f1;
+            padding: 15px 40px;
+            border-bottom: 2px solid #bdc3c7;
+            display: flex;
+            gap: 30px;
+        }
+        
+        .top-nav-link {
+            color: #2c3e50;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: color 0.2s;
+        }
+        
+        .top-nav-link:hover {
+            color: #3498db;
+        }
+        
+        /* Report Container */
+        .report-container {
+            padding: 40px 60px;
+            max-width: 1000px;
+        }
+        
+        .cover-photo-container {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .cover-photo {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .paragraph-container {
+            margin: 30px 0;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        h2 {
+            font-size: 1.8em;
+            color: #34495e;
+            margin: 30px 0 15px 0;
+        }
+        
+        p {
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+        
+        blockquote {
+            margin: 30px 0;
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            font-style: italic;
+        }
+        
+        figcaption {
+            margin-top: 10px;
+            font-weight: bold;
+            font-style: normal;
+        }
+        
+        strong {
+            color: #2c3e50;
+        }
+        
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        ul, ol {
+            margin: 20px 0;
+            padding-left: 30px;
+        }
+        
+        li {
+            margin-bottom: 12px;
+        }
+        
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0,0,0,0);
+            border: 0;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            padding: 30px 60px;
+            text-align: center;
+            border-top: 2px solid #ecf0f1;
+        }
+        
+        .bottom-nav-link {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+        
+        .bottom-nav-link:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .side-nav {
+                width: 100%;
+                position: relative;
+                height: auto;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .report-container {
+                padding: 20px 25px;
+            }
+            
+            .top-nav {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- Left Sidebar Navigation -->
+        <nav class="side-nav">
+            <a class="side-nav-title" href="index.html">
+                <div style="text-align: center; padding: 20px; background: white; border-radius: 8px;">
+                    <h3 style="color: #2c3e50; margin: 0;">YOUR PROJECT</h3>
+                </div>
+            </a>
+            
+            <div class="side-nav-container">
+                <ul>
+                    <a href="index.html"><li class="side-nav-active">Homepage</li></a>
+                    <a href="#introduction"><li>Introduction</li></a>
+                    <a href="#background"><li>Background & History</li></a>
+                    
+                    <li>
+                        <a href="#data-analysis"><span class="side-nav-section">Data Analysis</span></a>
+                        <ul class="nested-nav">
+                            <a href="#methodology"><li>Methodology</li></a>
+                            <a href="#findings"><li>Key Findings</li></a>
+                            <a href="#patterns"><li>Patterns & Trends</li></a>
+                        </ul>
+                    </li>
+                    
+                    <li>
+                        <a href="#case-studies"><span class="side-nav-section">Case Studies</span></a>
+                        <ul class="nested-nav">
+                            <a href="#case-1"><li>Case Study 1</li></a>
+                            <a href="#case-2"><li>Case Study 2</li></a>
+                            <a href="#case-3"><li>Case Study 3</li></a>
+                        </ul>
+                    </li>
+                    
+                    <a href="#impact"><li>Impact & Implications</li></a>
+                    <a href="#recommendations"><li>Recommendations</li></a>
+                    <a href="#get-involved"><li>Get Involved</li></a>
+                </ul>
+            </div>
+        </nav>
+        
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Links Bar -->
+            <section class="top-nav">
+                <a class="top-nav-link" href="map.html">Interactive Map</a>
+                <a class="top-nav-link" href="assets/report.pdf">PDF Report</a>
+                <a class="top-nav-link" href="assets/summary.pdf">Summary</a>
+            </section>
+            
+            <!-- Main Report Content -->
+            <section class="report-container">
+                <!-- Cover Photo -->
+                <div class="cover-photo-container">
+                    <img class="cover-photo" src="https://via.placeholder.com/800x400/2c3e50/ffffff?text=Your+Project+Cover+Image" 
+                         alt="Project cover image" />
+                </div>
+                
+                <!-- Content -->
+                <div class="paragraph-container">
+                    <h1 class="sr-only">Your Project Title</h1>
+                    <h2 class="sr-only">Mapping and Analyzing [Your Topic]</h2>
+                    
+                    <figure>
+                        <blockquote>
+                            "Add a powerful opening quote that captures the essence of your project and its mission."
+                            <figcaption>— Author Name</figcaption>
+                        </blockquote>
+                    </figure>
+                    
+                    <figure>
+                        <blockquote>
+                            "Another relevant quote that provides context or inspiration for the work."
+                            <figcaption>— Another Attribution</figcaption>
+                        </blockquote>
+                    </figure>
+                    
+                    <p><strong>YOUR PROJECT NAME</strong> is a community-based research initiative designed to document and visualize [describe your topic]. This project brings together data from [sources] to create an interactive mapping tool that reveals patterns of [what you're studying].</p>
+                    
+                    <p>This work is produced through collective effort and community engagement. To join our work, <a href="mailto:your-email@example.com">email us</a> or <a href="#">sign up for our community discussion groups</a>. You can also <a href="#">support our work</a>.</p>
+                    
+                    <p id="introduction">This report begins with an <strong>introduction</strong> that explains the context and goals of this mapping project, then continues in several parts:</p>
+                    
+                    <p><a href="#background"><strong>Background & History</strong></a> provides historical context for understanding the issues we're mapping. The goal is to show how current patterns connect to longer histories of [relevant context].</p>
+                    
+                    <p><a href="#data-analysis"><strong>Data Analysis</strong></a> examines the datasets we've collected, including our methodology for gathering and processing information. This section breaks down the technical aspects of how we built the interactive map.</p>
+                    
+                    <p><a href="#case-studies"><strong>Case Studies</strong></a> presents detailed examinations of specific locations or incidents that illustrate broader patterns. These deep dives show how the data manifests in real communities and real lives.</p>
+                    
+                    <p><a href="#impact"><strong>Impact & Implications</strong></a> analyzes what these patterns mean for affected communities and explores the broader social, political, and economic consequences.</p>
+                    
+                    <p>Finally, our <a href="#recommendations"><strong>Recommendations</strong></a> outline concrete steps for addressing the issues revealed by this data.</p>
+                    
+                    <p>The analysis in this project builds on previous work in [related field], including [mention any inspirations or prior projects]. We've created this interactive map to make complex data accessible and to support community organizing and advocacy efforts.</p>
+                </div>
+                
+                <!-- Map Preview Image (optional) -->
+                <div class="cover-photo-container">
+                    <a href="map.html">
+                        <img class="cover-photo" src="https://via.placeholder.com/800x400/3498db/ffffff?text=Click+to+View+Interactive+Map" 
+                             alt="Preview of interactive map" />
+                    </a>
+                </div>
+                
+                <div class="paragraph-container">
+                    <h2 id="background">Background & History</h2>
+                    <p>[Add your background content here - explain the historical context, why this issue matters, what led to this project being created...]</p>
+                    
+                    <h2 id="data-analysis">Data Analysis</h2>
+                    <p>[Explain your data sources, methodology, how you collected and verified information...]</p>
+                    
+                    <h2 id="case-studies">Case Studies</h2>
+                    <p>[Present your detailed case studies here...]</p>
+                    
+                    <h2 id="impact">Impact & Implications</h2>
+                    <p>[Discuss the broader meaning and consequences of your findings...]</p>
+                    
+                    <h2 id="recommendations">Recommendations</h2>
+                    <p>[List your action items, policy recommendations, or calls to action...]</p>
+                    <ul>
+                        <li>Recommendation 1</li>
+                        <li>Recommendation 2</li>
+                        <li>Recommendation 3</li>
+                    </ul>
+                    
+                    <h2 id="get-involved">Get Involved</h2>
+                    <p>Here's how you can participate in this work:</p>
+                    <ul>
+                        <li><strong>Explore the data:</strong> Use our <a href="map.html">interactive map</a> to investigate patterns in your community</li>
+                        <li><strong>Share:</strong> Help spread awareness about these findings</li>
+                        <li><strong>Contribute:</strong> Have additional data or information? Contact us</li>
+                        <li><strong>Organize:</strong> Use this research to support your advocacy work</li>
+                    </ul>
+                </div>
+            </section>
+            
+            <!-- Bottom Navigation -->
+            <section class="bottom-nav">
+                <a class="bottom-nav-link" href="map.html">View Interactive Map →</a>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
