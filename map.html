@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Map Demo</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+        }
+        
+        .back-navigation {
+            background: #2c3e50;
+            padding: 15px 20px;
+            color: white;
+        }
+        
+        .back-navigation a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .back-navigation a:hover {
+            text-decoration: underline;
+        }
+        
+        .map-container {
+            display: flex;
+            height: calc(100vh - 50px);
+        }
+        
+        .legend-panel {
+            width: 320px;
+            background: #f8f9fa;
+            overflow-y: auto;
+            padding: 20px;
+            border-right: 2px solid #dee2e6;
+        }
+        
+        .map-legend {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .legend-details {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .legend-details img {
+            width: 20px;
+            height: 20px;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+        
+        hr {
+            border: none;
+            border-top: 2px solid #dee2e6;
+            margin: 15px 0;
+        }
+        
+        #legend-list {
+            list-style: none;
+        }
+        
+        #legend-list li {
+            padding: 12px 15px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        #legend-list li:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+        
+        #legend-list li.disabled {
+            opacity: 0.4;
+            text-decoration: line-through;
+            background: #f8f9fa;
+        }
+        
+        .layer-indicator {
+            display: inline-block;
+            width: 30px;
+            height: 20px;
+            border-radius: 3px;
+            margin-left: 10px;
+        }
+        
+        .zone-red { background: rgba(220, 53, 69, 0.6); }
+        .zone-blue { background: rgba(13, 110, 253, 0.6); }
+        .zone-green { background: rgba(25, 135, 84, 0.6); }
+        .point-orange { background: rgba(253, 126, 20, 0.8); }
+        .point-purple { background: rgba(111, 66, 193, 0.8); }
+        
+        .view {
+            flex: 1;
+            position: relative;
+        }
+        
+        #mapid {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .legend-section-header {
+            font-size: 0.95em;
+            font-weight: bold;
+            color: #495057;
+            margin: 15px 0 10px 0;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Custom popup styling */
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        .leaflet-popup-content {
+            margin: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .popup-title {
+            font-weight: bold;
+            font-size: 16px;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .popup-description {
+            color: #495057;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="back-navigation">
+        <a href="#">← Back to Report</a>
+    </nav>
+    
+    <div class="map-container">
+        <aside class="legend-panel">
+            <h1 class="map-legend">Map Legend</h1>
+            <div class="legend-details">
+                Click on a legend item to <strong>show</strong> or <span style="text-decoration: line-through;">hide</span> that data layer on the map.
+            </div>
+            <div class="legend-details">
+                Zoom in and click on markers for more details!
+            </div>
+            
+            <hr>
+            
+            <ul id="legend-list">
+                <h2 class="legend-section-header">Geographic Zones</h2>
+                <li id="zone-red" data-layer="redZones">
+                    Downtown Area
+                    <span class="layer-indicator zone-red"></span>
+                </li>
+                <li id="zone-blue" data-layer="blueZones">
+                    Coastal Region
+                    <span class="layer-indicator zone-blue"></span>
+                </li>
+                <li id="zone-green" data-layer="greenZones">
+                    Urban Center
+                    <span class="layer-indicator zone-green"></span>
+                </li>
+                
+                <hr>
+                
+                <h2 class="legend-section-header">Point Locations</h2>
+                <li id="points-orange" data-layer="orangePoints">
+                    Community Centers
+                    <span class="layer-indicator point-orange"></span>
+                </li>
+                <li id="points-purple" data-layer="purplePoints">
+                    Historical Sites
+                    <span class="layer-indicator point-purple"></span>
+                </li>
+                
+                <hr>
+                
+                <h2 class="legend-section-header">Hotspot Density</h2>
+                <li id="hotspots" data-layer="hotspotLayer">
+                    High Activity Areas
+                    <span class="layer-indicator" style="background: rgba(255, 0, 0, 0.4);"></span>
+                </li>
+            </ul>
+        </aside>
+        
+        <main class="view">
+            <div id="mapid"></div>
+        </main>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Initialize map centered on Los Angeles
+        const map = L.map('mapid').setView([34.0522, -118.2437], 11);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Sample data - Replace with your actual GeoJSON data
+        const sampleZonesRed = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "Downtown Zone A",
+                        "description": "High activity area from 2015-2019",
+                        "incidents": 45
+                    },
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[
+                            [-118.26, 34.06],
+                            [-118.24, 34.06],
+                            [-118.24, 34.04],
+                            [-118.26, 34.04],
+                            [-118.26, 34.06]
+                        ]]
+                    }
+                }
+            ]
+        };
+
+        const sampleZonesBlue = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "Coastal Zone B",
+                        "description": "Monitored area 2018-2020"
+                    },
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[
+                            [-118.28, 34.02],
+                            [-118.26, 34.02],
+                            [-118.26, 34.00],
+                            [-118.28, 34.00],
+                            [-118.28, 34.02]
+                        ]]
+                    }
+                }
+            ]
+        };
+
+        const sampleZonesGreen = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "Urban Center Zone C",
+                        "description": "Target area 2016-2021"
+                    },
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[
+                            [-118.30, 34.08],
+                            [-118.28, 34.08],
+                            [-118.28, 34.06],
+                            [-118.30, 34.06],
+                            [-118.30, 34.08]
+                        ]]
+                    }
+                }
+            ]
+        };
+
+        const samplePointsOrange = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "Community Center 1",
+                        "description": "Active since 2012"
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [-118.25, 34.05]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "Community Center 2",
+                        "description": "Active since 2015"
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [-118.27, 34.01]
+                    }
+                }
+            ]
+        };
+
+        const samplePointsPurple = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "Historical Site A",
+                        "description": "Landmark location"
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [-118.29, 34.07]
+                    }
+                }
+            ]
+        };
+
+        // Create layer groups
+        const layers = {
+            redZones: L.layerGroup(),
+            blueZones: L.layerGroup(),
+            greenZones: L.layerGroup(),
+            orangePoints: L.layerGroup(),
+            purplePoints: L.layerGroup(),
+            hotspotLayer: L.layerGroup()
+        };
+
+        // Add red zones
+        L.geoJSON(sampleZonesRed, {
+            style: {
+                color: '#dc3545',
+                weight: 2,
+                opacity: 0.8,
+                fillOpacity: 0.3
+            },
+            onEachFeature: function(feature, layer) {
+                const props = feature.properties;
+                layer.bindPopup(`
+                    <div class="popup-title">${props.name}</div>
+                    <div class="popup-description">${props.description}</div>
+                    ${props.incidents ? `<div><strong>Incidents:</strong> ${props.incidents}</div>` : ''}
+                `);
+            }
+        }).addTo(layers.redZones);
+
+        // Add blue zones
+        L.geoJSON(sampleZonesBlue, {
+            style: {
+                color: '#0d6efd',
+                weight: 2,
+                opacity: 0.8,
+                fillOpacity: 0.3
+            },
+            onEachFeature: function(feature, layer) {
+                const props = feature.properties;
+                layer.bindPopup(`
+                    <div class="popup-title">${props.name}</div>
+                    <div class="popup-description">${props.description}</div>
+                `);
+            }
+        }).addTo(layers.blueZones);
+
+        // Add green zones
+        L.geoJSON(sampleZonesGreen, {
+            style: {
+                color: '#198754',
+                weight: 2,
+                opacity: 0.8,
+                fillOpacity: 0.3
+            },
+            onEachFeature: function(feature, layer) {
+                const props = feature.properties;
+                layer.bindPopup(`
+                    <div class="popup-title">${props.name}</div>
+                    <div class="popup-description">${props.description}</div>
+                `);
+            }
+        }).addTo(layers.greenZones);
+
+        // Add orange points
+        L.geoJSON(samplePointsOrange, {
+            pointToLayer: function(feature, latlng) {
+                return L.circleMarker(latlng, {
+                    radius: 10,
+                    fillColor: "#fd7e14",
+                    color: "#000",
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                });
+            },
+            onEachFeature: function(feature, layer) {
+                const props = feature.properties;
+                layer.bindPopup(`
+                    <div class="popup-title">${props.name}</div>
+                    <div class="popup-description">${props.description}</div>
+                `);
+            }
+        }).addTo(layers.orangePoints);
+
+        // Add purple points
+        L.geoJSON(samplePointsPurple, {
+            pointToLayer: function(feature, latlng) {
+                return L.circleMarker(latlng, {
+                    radius: 12,
+                    fillColor: "#6f42c1",
+                    color: "#000",
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                });
+            },
+            onEachFeature: function(feature, layer) {
+                const props = feature.properties;
+                layer.bindPopup(`
+                    <div class="popup-title">${props.name}</div>
+                    <div class="popup-description">${props.description}</div>
+                `);
+            }
+        }).addTo(layers.purplePoints);
+
+        // Add hotspot circles (simulated density)
+        const hotspots = [
+            { lat: 34.055, lng: -118.255, intensity: 0.8 },
+            { lat: 34.048, lng: -118.248, intensity: 0.6 },
+            { lat: 34.062, lng: -118.272, intensity: 0.9 },
+            { lat: 34.015, lng: -118.275, intensity: 0.5 }
+        ];
+
+        hotspots.forEach(spot => {
+            L.circle([spot.lat, spot.lng], {
+                color: 'red',
+                fillColor: '#f03',
+                fillOpacity: spot.intensity * 0.4,
+                radius: 800
+            }).bindPopup(`
+                <div class="popup-title">Hotspot</div>
+                <div class="popup-description">Activity Intensity: ${(spot.intensity * 100).toFixed(0)}%</div>
+            `).addTo(layers.hotspotLayer);
+        });
+
+        // Add all layers to map by default
+        Object.values(layers).forEach(layer => map.addLayer(layer));
+
+        // Setup legend toggle controls
+        document.querySelectorAll('#legend-list li').forEach(item => {
+            item.addEventListener('click', function() {
+                const layerName = this.dataset.layer;
+                if (!layerName) return;
+                
+                const layer = layers[layerName];
+                
+                if (map.hasLayer(layer)) {
+                    map.removeLayer(layer);
+                    this.classList.add('disabled');
+                } else {
+                    map.addLayer(layer);
+                    this.classList.remove('disabled');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
