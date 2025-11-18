@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Map Demo</title>
+    <title>Interactive Map with GeoTIFF Layer</title>
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -65,13 +65,6 @@
             line-height: 1.5;
         }
         
-        .legend-details img {
-            width: 20px;
-            height: 20px;
-            vertical-align: middle;
-            margin-right: 5px;
-        }
-        
         hr {
             border: none;
             border-top: 2px solid #dee2e6;
@@ -120,6 +113,10 @@
         .zone-green { background: rgba(25, 135, 84, 0.6); }
         .point-orange { background: rgba(253, 126, 20, 0.8); }
         .point-purple { background: rgba(111, 66, 193, 0.8); }
+        .geotiff-overlay { 
+            background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(200,200,200,0.6) 100%);
+            border: 1px solid #999;
+        }
         
         .view {
             flex: 1;
@@ -141,7 +138,16 @@
             letter-spacing: 0.5px;
         }
         
-        /* Custom popup styling */
+        .info-box {
+            background: #fff3cd;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 4px;
+            border-left: 4px solid #ffc107;
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+        
         .leaflet-popup-content-wrapper {
             border-radius: 8px;
             padding: 10px;
@@ -159,16 +165,11 @@
             color: #2c3e50;
             margin-bottom: 8px;
         }
-        
-        .popup-description {
-            color: #495057;
-            margin-bottom: 5px;
-        }
     </style>
 </head>
 <body>
     <nav class="back-navigation">
-        <a href="#">← Back to Report</a>
+        <a href="index.html">← Back to Report</a>
     </nav>
     
     <div class="map-container">
@@ -177,13 +178,22 @@
             <div class="legend-details">
                 Click on a legend item to <strong>show</strong> or <span style="text-decoration: line-through;">hide</span> that data layer on the map.
             </div>
-            <div class="legend-details">
-                Zoom in and click on markers for more details!
+            
+            <div class="info-box">
+                <strong>📍 New:</strong> GeoTIFF overlay layer added! See instructions below for setup.
             </div>
             
             <hr>
             
             <ul id="legend-list">
+                <h2 class="legend-section-header">Historical Map Overlay</h2>
+                <li id="geotiff-layer" data-layer="geotiffOverlay">
+                    Historical Map Layer
+                    <span class="layer-indicator geotiff-overlay"></span>
+                </li>
+                
+                <hr>
+                
                 <h2 class="legend-section-header">Geographic Zones</h2>
                 <li id="zone-red" data-layer="redZones">
                     Downtown Area
@@ -200,7 +210,27 @@
                 
                 <hr>
                 
-                <h2 class="legend-section-header">Point Locations</h2>
+                <h2 class="legend-section-header">Skid Row Community Map</h2>
+                <li id="police-surveillance" data-layer="policeSurveillance">
+                    Police & State Violence
+                    <span class="layer-indicator" style="background: #ff6600;"></span>
+                </li>
+                <li id="sanitation" data-layer="sanitation">
+                    Sanitation
+                    <span class="layer-indicator" style="background: #ffff00;"></span>
+                </li>
+                <li id="art-locations" data-layer="artLocations">
+                    Art & Culture
+                    <span class="layer-indicator" style="background: #90ee90;"></span>
+                </li>
+                <li id="danger-zones" data-layer="dangerZones">
+                    Danger Zones
+                    <span class="layer-indicator" style="background: #ff0000;"></span>
+                </li>
+                
+                <hr>
+                
+                <h2 class="legend-section-header">Sample Point Locations</h2>
                 <li id="points-orange" data-layer="orangePoints">
                     Community Centers
                     <span class="layer-indicator point-orange"></span>
@@ -218,6 +248,19 @@
                     <span class="layer-indicator" style="background: rgba(255, 0, 0, 0.4);"></span>
                 </li>
             </ul>
+            
+            <div style="margin-top: 30px; padding: 15px; background: #e7f3ff; border-radius: 6px; font-size: 0.85em;">
+                <strong>📖 Setup Instructions:</strong><br><br>
+                
+                <strong>Option 1: Tile Layer (Recommended)</strong><br>
+                Convert your GeoTIFF to tiles using QGIS or MapTiler, then update line ~250 in the code.<br><br>
+                
+                <strong>Option 2: GeoTIFF Library</strong><br>
+                Use georaster-layer-for-leaflet library (uncomment lines ~20-25 in code).<br><br>
+                
+                <strong>Option 3: Image Overlay</strong><br>
+                Currently active - works with georeferenced PNG/JPG files in 'data/overlay/' folder.
+            </div>
         </aside>
         
         <main class="view">
@@ -228,9 +271,19 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
+    <!-- PapaParse for CSV loading -->
+    <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+    
+    <!-- OPTION 2: Uncomment these lines to use GeoTIFF library -->
+    <!-- 
+    <script src="https://unpkg.com/georaster@1.6.0/dist/georaster.browser.bundle.min.js"></script>
+    <script src="https://unpkg.com/georaster-layer-for-leaflet@3.10.0/dist/georaster-layer-for-leaflet.min.js"></script>
+    <script src="https://unpkg.com/geotiff@2.0.7/dist-browser/geotiff.js"></script>
+    -->
+    
     <script>
-        // Initialize map centered on Los Angeles
-        const map = L.map('mapid').setView([34.0522, -118.2437], 11);
+        // Initialize map centered on Skid Row
+        const map = L.map('mapid').setView([34.0424, -118.2451], 15);
 
         // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -238,124 +291,13 @@
             maxZoom: 19
         }).addTo(map);
 
-        // Sample data - Replace with your actual GeoJSON data
-        const sampleZonesRed = {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "properties": {
-                        "name": "Downtown Zone A",
-                        "description": "High activity area from 2015-2019",
-                        "incidents": 45
-                    },
-                    "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [[
-                            [-118.26, 34.06],
-                            [-118.24, 34.06],
-                            [-118.24, 34.04],
-                            [-118.26, 34.04],
-                            [-118.26, 34.06]
-                        ]]
-                    }
-                }
-            ]
-        };
-
-        const sampleZonesBlue = {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "properties": {
-                        "name": "Coastal Zone B",
-                        "description": "Monitored area 2018-2020"
-                    },
-                    "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [[
-                            [-118.28, 34.02],
-                            [-118.26, 34.02],
-                            [-118.26, 34.00],
-                            [-118.28, 34.00],
-                            [-118.28, 34.02]
-                        ]]
-                    }
-                }
-            ]
-        };
-
-        const sampleZonesGreen = {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "properties": {
-                        "name": "Urban Center Zone C",
-                        "description": "Target area 2016-2021"
-                    },
-                    "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [[
-                            [-118.30, 34.08],
-                            [-118.28, 34.08],
-                            [-118.28, 34.06],
-                            [-118.30, 34.06],
-                            [-118.30, 34.08]
-                        ]]
-                    }
-                }
-            ]
-        };
-
-        const samplePointsOrange = {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "properties": {
-                        "name": "Community Center 1",
-                        "description": "Active since 2012"
-                    },
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [-118.25, 34.05]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "properties": {
-                        "name": "Community Center 2",
-                        "description": "Active since 2015"
-                    },
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [-118.27, 34.01]
-                    }
-                }
-            ]
-        };
-
-        const samplePointsPurple = {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "properties": {
-                        "name": "Historical Site A",
-                        "description": "Landmark location"
-                    },
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [-118.29, 34.07]
-                    }
-                }
-            ]
-        };
-
         // Create layer groups
         const layers = {
+            geotiffOverlay: L.layerGroup(),
+            policeSurveillance: L.layerGroup(),
+            sanitation: L.layerGroup(),
+            artLocations: L.layerGroup(),
+            dangerZones: L.layerGroup(),
             redZones: L.layerGroup(),
             blueZones: L.layerGroup(),
             greenZones: L.layerGroup(),
@@ -364,101 +306,296 @@
             hotspotLayer: L.layerGroup()
         };
 
-        // Add red zones
-        L.geoJSON(sampleZonesRed, {
-            style: {
-                color: '#dc3545',
-                weight: 2,
-                opacity: 0.8,
-                fillOpacity: 0.3
+        // ==========================================
+        // OPTION 1: IMAGE OVERLAY (Simplest - works with georeferenced PNG/JPG)
+        // ==========================================
+        // Replace with your actual image path and coordinates
+        const imageUrl = 'data/overlay/historical-map.png'; // Your georeferenced image
+        const imageBounds = [
+            [34.00, -118.30],  // Southwest corner [lat, lng]
+            [34.10, -118.20]   // Northeast corner [lat, lng]
+        ];
+        
+        // Create image overlay
+        const imageOverlay = L.imageOverlay(imageUrl, imageBounds, {
+            opacity: 0.6,  // Adjust transparency here (0-1)
+            interactive: true
+        });
+        
+        // Handle missing image gracefully
+        imageOverlay.on('error', function() {
+            console.log('Image overlay not found. Please add your georeferenced image to data/overlay/historical-map.png');
+        });
+        
+        imageOverlay.addTo(layers.geotiffOverlay);
+
+        // ==========================================
+        // LOAD CSV DATA - Skid Row Community Map Points
+        // ==========================================
+        
+        // Define color mapping for categories
+        const categoryColors = {
+            'Orange': '#ff6600',      // Police and State Violence
+            'Yellow': '#ffff00',      // Sanitation
+            'Lime Green': '#90ee90',  // Art
+            'Red': '#ff0000'          // Danger
+        };
+        
+        const categoryToLayer = {
+            'Orange': 'policeSurveillance',
+            'Yellow': 'sanitation',
+            'Lime Green': 'artLocations',
+            'Red': 'dangerZones'
+        };
+        
+        // Load CSV file
+        Papa.parse('data/Skid Row - LACAN - Community Map - Points.csv', {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                console.log('CSV loaded successfully:', results.data.length, 'points');
+                
+                results.data.forEach(function(row) {
+                    const lat = parseFloat(row['Latitude']);
+                    const lon = parseFloat(row['Longitude']);
+                    const title = row['Title'];
+                    const category = row['Category'].trim();
+                    const description = row['Description'];
+                    const comments = row['Comments'];
+                    
+                    // Skip if invalid coordinates
+                    if (isNaN(lat) || isNaN(lon)) return;
+                    
+                    // Get color and layer for this category
+                    const color = categoryColors[category] || '#999999';
+                    const layerName = categoryToLayer[category];
+                    
+                    if (layerName && layers[layerName]) {
+                        // Create marker
+                        const marker = L.circleMarker([lat, lon], {
+                            radius: 8,
+                            fillColor: color,
+                            color: '#000',
+                            weight: 2,
+                            opacity: 1,
+                            fillOpacity: 0.7
+                        });
+                        
+                        // Create popup content
+                        let popupContent = `<div class="popup-title">${title}</div>`;
+                        if (description) {
+                            popupContent += `<div style="margin-top: 8px;"><strong>${description}</strong></div>`;
+                        }
+                        if (comments) {
+                            popupContent += `<div style="margin-top: 5px; color: #666;">${comments}</div>`;
+                        }
+                        popupContent += `<div style="margin-top: 8px; font-size: 12px; color: #999;">Category: ${title}</div>`;
+                        
+                        marker.bindPopup(popupContent);
+                        marker.addTo(layers[layerName]);
+                    }
+                });
+                
+                console.log('CSV markers added to map');
             },
+            error: function(error) {
+                console.error('Error loading CSV:', error);
+                console.log('Make sure your CSV file is at: data/Skid Row - LACAN - Community Map - Points.csv');
+            }
+        });
+
+        // ==========================================
+        // OPTION 2: TILE LAYER (Best for large GeoTIFFs)
+        // ==========================================
+        // Uncomment and modify this if you've converted your GeoTIFF to tiles
+        /*
+        const tileOverlay = L.tileLayer('data/tiles/{z}/{x}/{y}.png', {
+            opacity: 0.6,
+            maxZoom: 18,
+            tms: false,  // Set to true if using TMS tile scheme
+            attribution: 'Historical map overlay'
+        });
+        tileOverlay.addTo(layers.geotiffOverlay);
+        */
+
+        // ==========================================
+        // OPTION 3: GEOTIFF LIBRARY (Direct GeoTIFF loading)
+        // ==========================================
+        // Uncomment this section if you included the georaster libraries above
+        /*
+        fetch('data/overlay/your-file.tif')
+            .then(response => response.arrayBuffer())
+            .then(arrayBuffer => {
+                parseGeoraster(arrayBuffer).then(georaster => {
+                    const geoRasterLayer = new GeoRasterLayer({
+                        georaster: georaster,
+                        opacity: 0.6,
+                        pixelValuesToColorFn: values => {
+                            // Customize color mapping here
+                            const pixelValue = values[0];
+                            if (pixelValue === 0) return null; // Transparent
+                            return `rgba(255, ${255 - pixelValue}, 0, 0.7)`;
+                        },
+                        resolution: 256
+                    });
+                    geoRasterLayer.addTo(layers.geotiffOverlay);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading GeoTIFF:', error);
+            });
+        */
+
+        // Sample data for other layers (same as before)
+        const sampleZonesRed = {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "properties": {
+                    "name": "Downtown Zone A",
+                    "description": "High activity area from 2015-2019",
+                    "incidents": 45
+                },
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[
+                        [-118.26, 34.06], [-118.24, 34.06],
+                        [-118.24, 34.04], [-118.26, 34.04],
+                        [-118.26, 34.06]
+                    ]]
+                }
+            }]
+        };
+
+        const sampleZonesBlue = {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "properties": {
+                    "name": "Coastal Zone B",
+                    "description": "Monitored area 2018-2020"
+                },
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[
+                        [-118.28, 34.02], [-118.26, 34.02],
+                        [-118.26, 34.00], [-118.28, 34.00],
+                        [-118.28, 34.02]
+                    ]]
+                }
+            }]
+        };
+
+        const sampleZonesGreen = {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "properties": {
+                    "name": "Urban Center Zone C",
+                    "description": "Target area 2016-2021"
+                },
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[
+                        [-118.30, 34.08], [-118.28, 34.08],
+                        [-118.28, 34.06], [-118.30, 34.06],
+                        [-118.30, 34.08]
+                    ]]
+                }
+            }]
+        };
+
+        const samplePointsOrange = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": { "name": "Community Center 1", "description": "Active since 2012" },
+                    "geometry": { "type": "Point", "coordinates": [-118.25, 34.05] }
+                },
+                {
+                    "type": "Feature",
+                    "properties": { "name": "Community Center 2", "description": "Active since 2015" },
+                    "geometry": { "type": "Point", "coordinates": [-118.27, 34.01] }
+                }
+            ]
+        };
+
+        const samplePointsPurple = {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "properties": { "name": "Historical Site A", "description": "Landmark location" },
+                "geometry": { "type": "Point", "coordinates": [-118.29, 34.07] }
+            }]
+        };
+
+        // Add zones
+        L.geoJSON(sampleZonesRed, {
+            style: { color: '#dc3545', weight: 2, opacity: 0.8, fillOpacity: 0.3 },
             onEachFeature: function(feature, layer) {
                 const props = feature.properties;
                 layer.bindPopup(`
                     <div class="popup-title">${props.name}</div>
-                    <div class="popup-description">${props.description}</div>
+                    <div>${props.description}</div>
                     ${props.incidents ? `<div><strong>Incidents:</strong> ${props.incidents}</div>` : ''}
                 `);
             }
         }).addTo(layers.redZones);
 
-        // Add blue zones
         L.geoJSON(sampleZonesBlue, {
-            style: {
-                color: '#0d6efd',
-                weight: 2,
-                opacity: 0.8,
-                fillOpacity: 0.3
-            },
+            style: { color: '#0d6efd', weight: 2, opacity: 0.8, fillOpacity: 0.3 },
             onEachFeature: function(feature, layer) {
-                const props = feature.properties;
                 layer.bindPopup(`
-                    <div class="popup-title">${props.name}</div>
-                    <div class="popup-description">${props.description}</div>
+                    <div class="popup-title">${feature.properties.name}</div>
+                    <div>${feature.properties.description}</div>
                 `);
             }
         }).addTo(layers.blueZones);
 
-        // Add green zones
         L.geoJSON(sampleZonesGreen, {
-            style: {
-                color: '#198754',
-                weight: 2,
-                opacity: 0.8,
-                fillOpacity: 0.3
-            },
+            style: { color: '#198754', weight: 2, opacity: 0.8, fillOpacity: 0.3 },
             onEachFeature: function(feature, layer) {
-                const props = feature.properties;
                 layer.bindPopup(`
-                    <div class="popup-title">${props.name}</div>
-                    <div class="popup-description">${props.description}</div>
+                    <div class="popup-title">${feature.properties.name}</div>
+                    <div>${feature.properties.description}</div>
                 `);
             }
         }).addTo(layers.greenZones);
 
-        // Add orange points
+        // Add points
         L.geoJSON(samplePointsOrange, {
             pointToLayer: function(feature, latlng) {
                 return L.circleMarker(latlng, {
-                    radius: 10,
-                    fillColor: "#fd7e14",
-                    color: "#000",
-                    weight: 2,
-                    opacity: 1,
-                    fillOpacity: 0.8
+                    radius: 10, fillColor: "#fd7e14", color: "#000",
+                    weight: 2, opacity: 1, fillOpacity: 0.8
                 });
             },
             onEachFeature: function(feature, layer) {
-                const props = feature.properties;
                 layer.bindPopup(`
-                    <div class="popup-title">${props.name}</div>
-                    <div class="popup-description">${props.description}</div>
+                    <div class="popup-title">${feature.properties.name}</div>
+                    <div>${feature.properties.description}</div>
                 `);
             }
         }).addTo(layers.orangePoints);
 
-        // Add purple points
         L.geoJSON(samplePointsPurple, {
             pointToLayer: function(feature, latlng) {
                 return L.circleMarker(latlng, {
-                    radius: 12,
-                    fillColor: "#6f42c1",
-                    color: "#000",
-                    weight: 2,
-                    opacity: 1,
-                    fillOpacity: 0.8
+                    radius: 12, fillColor: "#6f42c1", color: "#000",
+                    weight: 2, opacity: 1, fillOpacity: 0.8
                 });
             },
             onEachFeature: function(feature, layer) {
-                const props = feature.properties;
                 layer.bindPopup(`
-                    <div class="popup-title">${props.name}</div>
-                    <div class="popup-description">${props.description}</div>
+                    <div class="popup-title">${feature.properties.name}</div>
+                    <div>${feature.properties.description}</div>
                 `);
             }
         }).addTo(layers.purplePoints);
 
-        // Add hotspot circles (simulated density)
+        // Add hotspots
         const hotspots = [
             { lat: 34.055, lng: -118.255, intensity: 0.8 },
             { lat: 34.048, lng: -118.248, intensity: 0.6 },
@@ -468,13 +605,11 @@
 
         hotspots.forEach(spot => {
             L.circle([spot.lat, spot.lng], {
-                color: 'red',
-                fillColor: '#f03',
-                fillOpacity: spot.intensity * 0.4,
-                radius: 800
+                color: 'red', fillColor: '#f03',
+                fillOpacity: spot.intensity * 0.4, radius: 800
             }).bindPopup(`
                 <div class="popup-title">Hotspot</div>
-                <div class="popup-description">Activity Intensity: ${(spot.intensity * 100).toFixed(0)}%</div>
+                <div>Activity Intensity: ${(spot.intensity * 100).toFixed(0)}%</div>
             `).addTo(layers.hotspotLayer);
         });
 
@@ -501,3 +636,4 @@
     </script>
 </body>
 </html>
+  
