@@ -18,12 +18,15 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             overflow: hidden;
+            background: #fafafa;
         }
         
         .back-navigation {
-            background: #2c3e50;
+            background: linear-gradient(135deg, #b19cd9 0%, #9b7ac7 100%);
             padding: 15px 20px;
             color: white;
+            border-bottom: 4px solid #ffb3d9;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
         .back-navigation a {
@@ -43,17 +46,18 @@
         
         .legend-panel {
             width: 320px;
-            background: #f8f9fa;
+            background: linear-gradient(180deg, #ffd4e5 0%, #fff0f5 100%);
             overflow-y: auto;
             padding: 20px;
-            border-right: 2px solid #dee2e6;
+            border-right: 4px solid #ffb3d9;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
         }
         
         .map-legend {
             font-size: 1.3em;
             font-weight: bold;
             margin-bottom: 15px;
-            color: #2c3e50;
+            color: #7b5fa7;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
@@ -67,7 +71,7 @@
         
         hr {
             border: none;
-            border-top: 2px solid #dee2e6;
+            border-top: 2px solid #ffb3d9;
             margin: 15px 0;
         }
         
@@ -81,17 +85,20 @@
             background: white;
             border-radius: 6px;
             cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            border: 2px solid #ffb3d9;
             font-weight: 500;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         
         #legend-list li:hover {
-            background: #e9ecef;
-            border-color: #adb5bd;
+            background: #fff0f5;
+            border-color: #ff9ec8;
+            transform: translateX(5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         
         #legend-list li.disabled {
@@ -118,10 +125,15 @@
             width: 100%;
         }
         
+        /* Historical map tiles with transparency */
+        .historical-tiles img {
+            background: transparent;
+        }
+        
         .legend-section-header {
             font-size: 0.95em;
             font-weight: bold;
-            color: #495057;
+            color: #7b5fa7;
             margin: 15px 0 10px 0;
             text-transform: uppercase;
             font-size: 0.85em;
@@ -129,13 +141,14 @@
         }
         
         .info-box {
-            background: #d4edda;
+            background: #fff0f5;
             padding: 12px;
             margin: 15px 0;
             border-radius: 4px;
-            border-left: 4px solid #28a745;
+            border-left: 4px solid #b19cd9;
             font-size: 0.85em;
             line-height: 1.4;
+            color: #7b5fa7;
         }
         
         .leaflet-popup-content-wrapper {
@@ -217,10 +230,10 @@
             </div>
             
             <div style="margin-top: 20px; padding: 15px; background: #e7f3ff; border-radius: 6px; font-size: 0.85em;">
-                <strong>📖 Historical Map Setup:</strong><br><br>
-                To add a historical map overlay:<br>
-                1. Place your georeferenced image in <code>data/overlay/historical-map.png</code><br>
-                2. Update the coordinates in the code (line ~220)
+                <strong>📖 Historical Map Tiles:</strong><br><br>
+                Your historical map has been converted to tiles for fast loading.<br>
+                Tiles are stored in <code>data/tiles/</code><br>
+                Adjust opacity by modifying the code (line ~269).
             </div>
         </aside>
         
@@ -256,25 +269,20 @@
         };
 
         // ==========================================
-        // HISTORICAL MAP OVERLAY (Optional)
+        // HISTORICAL MAP OVERLAY - TILED VERSION
         // ==========================================
-        // Replace with your actual image path and coordinates
-        const imageUrl = 'data/overlay/historical-map.png';
-        const imageBounds = [
-            [34.035, -118.255],  // Southwest corner [lat, lng]
-            [34.050, -118.235]   // Northeast corner [lat, lng]
-        ];
-        
-        const imageOverlay = L.imageOverlay(imageUrl, imageBounds, {
-            opacity: 0.6,
-            interactive: true
+        // Using pre-generated tiles for fast loading
+        const historicalTileLayer = L.tileLayer('data/tiles/{z}/{x}/{y}.png', {
+            minZoom: 10,
+            maxZoom: 18,
+            opacity: 0.7,
+            tms: true, // gdal2tiles uses TMS coordinate system
+            attribution: 'Historical Map Overlay',
+            className: 'historical-tiles' // for custom styling
         });
         
-        imageOverlay.on('error', function() {
-            console.log('Historical map overlay not found at: data/overlay/historical-map.png');
-        });
-        
-        imageOverlay.addTo(layers.geotiffOverlay);
+        historicalTileLayer.addTo(layers.geotiffOverlay);
+        console.log("✓ Historical map tiles loaded");
 
         // ==========================================
         // SKID ROW BOUNDARY

@@ -5,18 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>A Skid Row Community Map</title>
 <style>
-/* Keep your previous sidebar, top-nav, and main content CSS */
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin:0; }
+/* Colorful and bright color palette */
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin:0; background:#fafafa; }
 .page-container { display: flex; min-height: 100vh; }
-.side-nav { width: 280px; background: #2c3e50; color: white; padding: 30px 20px; position: fixed; height: 100vh; overflow-y: auto; }
+.side-nav { width: 280px; background: #b19cd9; color: white; padding: 30px 20px; position: fixed; height: 100vh; overflow-y: auto; border-right: 4px solid #ffb3d9; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
 .side-nav-container ul { list-style: none; padding:0; }
-.side-nav-container li { padding: 10px 15px; margin:5px 0; cursor:pointer; border-radius:4px; }
-.side-nav-container li:hover { background:#34495e; }
-.side-nav-active { background:#3498db; font-weight:bold; }
+.side-nav-container li { padding: 10px 15px; margin:5px 0; cursor:pointer; border-radius:4px; transition: all 0.3s ease; }
+.side-nav-container li:hover { background:#9b7ac7; transform: translateX(5px); }
+.side-nav-active { background:#7b5fa7; font-weight:bold; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
 .main-content { margin-left: 280px; flex:1; padding:40px 60px; max-width:1000px; }
-.top-nav { background:#ecf0f1; padding:15px 40px; border-bottom:2px solid #bdc3c7; display:flex; gap:30px; }
-.top-nav-link { color:#2c3e50; text-decoration:none; font-weight:600; text-transform:uppercase; }
-.top-nav-link:hover { color:#3498db; }
+.top-nav { background: linear-gradient(135deg, #ffb3d9 0%, #ffd4e5 100%); padding:15px 40px; border-bottom:2px solid #ff9ec8; display:flex; gap:30px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+.top-nav-link { color:#7b5fa7; text-decoration:none; font-weight:600; text-transform:uppercase; transition: all 0.3s ease; }
+.top-nav-link:hover { color:#9b7ac7; transform: translateY(-2px); }
 </style>
 </head>
 <body>
@@ -24,8 +24,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 <div class="page-container">
   <nav class="side-nav">
     <a class="side-nav-title" href="index.html">
-      <div style="text-align:center; padding:20px; background:white; border-radius:8px;">
-        <h3 style="color:#2c3e50; margin:0;">A Skid Row Community Map</h3>
+      <div style="text-align:center; padding:20px; background:white; border-radius:8px; border: 3px solid #ffb3d9; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <h3 style="color:#7b5fa7; margin:0;">A Skid Row Community Map</h3>
       </div>
     </a>
     <div class="side-nav-container">
