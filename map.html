@@ -151,6 +151,60 @@
             color: #7b5fa7;
         }
         
+        .opacity-control {
+            background: white;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 2px solid #ffb3d9;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .opacity-control label {
+            display: block;
+            font-weight: bold;
+            color: #7b5fa7;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+        
+        .opacity-control input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #ffb3d9 0%, #b19cd9 100%);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .opacity-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #7b5fa7;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .opacity-control input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #7b5fa7;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .opacity-value {
+            display: inline-block;
+            font-weight: bold;
+            color: #b19cd9;
+            margin-left: 5px;
+        }
+        
         .leaflet-popup-content-wrapper {
             border-radius: 8px;
             padding: 10px;
@@ -193,6 +247,11 @@
                     Historical Map Layer
                     <span class="layer-indicator" style="background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(200,200,200,0.6) 100%); border: 1px solid #999;"></span>
                 </li>
+                
+                <div class="opacity-control">
+                    <label for="historical-opacity">Historical Map Transparency: <span class="opacity-value" id="opacity-value">70%</span></label>
+                    <input type="range" id="historical-opacity" min="0" max="100" value="70" step="5">
+                </div>
                 
                 <hr>
                 
@@ -283,6 +342,16 @@
         
         historicalTileLayer.addTo(layers.geotiffOverlay);
         console.log("✓ Historical map tiles loaded");
+        
+        // Opacity slider control
+        const opacitySlider = document.getElementById('historical-opacity');
+        const opacityValue = document.getElementById('opacity-value');
+        
+        opacitySlider.addEventListener('input', function() {
+            const opacity = this.value / 100;
+            historicalTileLayer.setOpacity(opacity);
+            opacityValue.textContent = this.value + '%';
+        });
 
         // ==========================================
         // SKID ROW BOUNDARY
