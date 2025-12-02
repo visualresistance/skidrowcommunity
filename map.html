@@ -311,10 +311,11 @@
         // Initialize map centered on Skid Row
         const map = L.map('mapid').setView([34.0424, -118.2451], 15);
 
-        // Add OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
-            maxZoom: 19
+        // Add CartoDB Positron (minimal light basemap)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors, © CARTO',
+            maxZoom: 19,
+            subdomains: 'abcd'
         }).addTo(map);
 
         // Create layer groups
