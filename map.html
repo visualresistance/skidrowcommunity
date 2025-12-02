@@ -282,18 +282,15 @@
                 </li>
             </ul>
             
-            <div class="info-box">
-                <strong>📊 Data Source:</strong><br>
-                Skid Row - LACAN - Community Map<br>
-                Points loaded from CSV file
-            </div>
+            <hr>
             
-            <div style="margin-top: 20px; padding: 15px; background: #e7f3ff; border-radius: 6px; font-size: 0.85em;">
-                <strong>📖 Historical Map Tiles:</strong><br><br>
-                Your historical map has been converted to tiles for fast loading.<br>
-                Tiles are stored in <code>data/tiles/</code><br>
-                Adjust opacity by modifying the code (line ~269).
-            </div>
+            <ul id="legend-list">
+                <h2 class="legend-section-header">Arrest Data</h2>
+                <li id="arrests" data-layer="arrests">
+                    Arrests (2021-2025)
+                    <span class="layer-indicator" style="background: #8b4789; border: 2px solid #6b2f6a;"></span>
+                </li>
+            </ul>
         </aside>
         
         <main class="view">
@@ -325,7 +322,8 @@
             policeSurveillance: L.layerGroup(),
             sanitation: L.layerGroup(),
             artLocations: L.layerGroup(),
-            dangerZones: L.layerGroup()
+            dangerZones: L.layerGroup(),
+            arrests: L.layerGroup()
         };
 
         // ==========================================
@@ -469,6 +467,98 @@
             error: function(error) {
                 console.error('Error loading CSV:', error);
                 console.log('Make sure your CSV file is at: data/Skid Row - LACAN - Community Map - Points.csv');
+            }
+        });
+
+        // ==========================================
+        // LOAD ARRESTS DATA
+        // ==========================================
+        Papa.parse('data/SkidRowArrests.csv', {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                console.log('Arrests CSV loaded:', results.data.length, 'records');
+                
+                // Group arrests by location to handle overlapping markers
+                const locationGroups = {};
+                
+                results.data.forEach(function(row) {
+                    const lat = parseFloat(row['LAT']);
+                    const lon = parseFloat(row['LON']);
+                    
+                    // Skip if invalid coordinates
+                    if (isNaN(lat) || isNaN(lon)) {
+                        return;
+                    }
+                    
+                    // Create a location key (rounded to avoid floating point issues)
+                    const locationKey = `${lat.toFixed(5)},${lon.toFixed(5)}`;
+                    
+                    if (!locationGroups[locationKey]) {
+                        locationGroups[locationKey] = {
+                            lat: lat,
+                            lon: lon,
+                            arrests: []
+                        };
+                    }
+                    
+                    locationGroups[locationKey].arrests.push({
+                        age: row['Age'],
+                        sexCode: row['Sex Code'],
+                        descentCode: row['Descent Code'],
+                        chargeGroupDesc: row['Charge Group Description'],
+                        chargeDesc: row['Charge Description'],
+                        arrestDate: row['Arrest Date']
+                    });
+                });
+                
+                // Create markers with size based on number of arrests
+                Object.values(locationGroups).forEach(function(location) {
+                    const arrestCount = location.arrests.length;
+                    
+                    // Scale marker size based on number of arrests (min 6, max 20)
+                    const markerSize = Math.min(6 + (arrestCount * 1.5), 20);
+                    
+                    // Create marker with size proportional to arrest count
+                    const marker = L.circleMarker([location.lat, location.lon], {
+                        radius: markerSize,
+                        fillColor: '#8b4789',
+                        color: '#6b2f6a',
+                        weight: 1.5,
+                        opacity: 1,
+                        fillOpacity: 0.7
+                    });
+                    
+                    // Build popup content with all arrests at this location
+                    let popupContent = `
+                        <div class="popup-title">Arrest Records (${arrestCount})</div>
+                        <div style="max-height: 300px; overflow-y: auto; margin-top: 8px;">
+                    `;
+                    
+                    location.arrests.forEach(function(arrest, index) {
+                        popupContent += `
+                            <div style="padding: 8px 0; ${index > 0 ? 'border-top: 1px solid #ddd;' : ''}">
+                                <strong>Record ${index + 1}:</strong><br>
+                                <strong>Age:</strong> ${arrest.age || 'N/A'}<br>
+                                <strong>Sex:</strong> ${arrest.sexCode || 'N/A'}<br>
+                                <strong>Descent:</strong> ${arrest.descentCode || 'N/A'}<br>
+                                <strong>Charge Group:</strong> ${arrest.chargeGroupDesc || 'N/A'}<br>
+                                <strong>Charge:</strong> ${arrest.chargeDesc || 'N/A'}<br>
+                                ${arrest.arrestDate ? `<strong>Date:</strong> ${arrest.arrestDate}<br>` : ''}
+                            </div>
+                        `;
+                    });
+                    
+                    popupContent += '</div>';
+                    marker.bindPopup(popupContent);
+                    marker.addTo(layers.arrests);
+                });
+                
+                console.log('Arrests data loaded successfully - ' + Object.keys(locationGroups).length + ' unique locations');
+            },
+            error: function(error) {
+                console.error('Error loading arrests CSV:', error);
             }
         });
 
