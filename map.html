@@ -205,6 +205,101 @@
             margin-left: 5px;
         }
         
+        .legend-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .legend-grid-item {
+            background: white;
+            border: 2px solid;
+            border-radius: 8px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 0.85em;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .legend-grid-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .legend-grid-item.hidden {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
+        
+        .filter-control {
+            background: white;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 2px solid #b19cd9;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .filter-control label {
+            display: block;
+            font-weight: bold;
+            color: #7b5fa7;
+            margin-bottom: 8px;
+            font-size: 0.85em;
+        }
+        
+        .filter-control select {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #ffb3d9;
+            border-radius: 6px;
+            background: white;
+            color: #333;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+        
+        .filter-control select:focus {
+            outline: none;
+            border-color: #b19cd9;
+        }
+        
+        .filter-control select:hover {
+            border-color: #9b7ac7;
+        }
+        
+        .filter-reset {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #b19cd9 0%, #9b7ac7 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .filter-reset:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        
+        .filter-reset:active {
+            transform: translateY(0);
+        }
+        
         .leaflet-popup-content-wrapper {
             border-radius: 8px;
             padding: 10px;
@@ -264,22 +359,24 @@
                 <hr>
                 
                 <h2 class="legend-section-header">Community Map Points</h2>
-                <li id="police-surveillance" data-layer="policeSurveillance">
-                    Police & State Violence
-                    <span class="layer-indicator" style="background: #ff6600; border: 2px solid #cc5200;"></span>
-                </li>
-                <li id="sanitation" data-layer="sanitation">
-                    Sanitation
-                    <span class="layer-indicator" style="background: #ffff00; border: 2px solid #cccc00;"></span>
-                </li>
-                <li id="art-locations" data-layer="artLocations">
-                    Art & Culture
-                    <span class="layer-indicator" style="background: #90ee90; border: 2px solid #5cb85c;"></span>
-                </li>
-                <li id="danger-zones" data-layer="dangerZones">
-                    Danger Zones
-                    <span class="layer-indicator" style="background: #ff0000; border: 2px solid #cc0000;"></span>
-                </li>
+                <div class="legend-grid">
+                    <div class="legend-grid-item" id="police-surveillance" data-layer="policeSurveillance" 
+                         style="background: #ff6600; border-color: #cc5200; color: white;">
+                        Police & State Violence
+                    </div>
+                    <div class="legend-grid-item" id="sanitation" data-layer="sanitation" 
+                         style="background: #ffff00; border-color: #cccc00; color: #333;">
+                        Sanitation
+                    </div>
+                    <div class="legend-grid-item" id="art-locations" data-layer="artLocations" 
+                         style="background: #90ee90; border-color: #5cb85c; color: #333;">
+                        Art & Culture
+                    </div>
+                    <div class="legend-grid-item" id="danger-zones" data-layer="dangerZones" 
+                         style="background: #ff0000; border-color: #cc0000; color: white;">
+                        Danger Zones
+                    </div>
+                </div>
             </ul>
             
             <hr>
@@ -290,6 +387,14 @@
                     Arrests (2021-2025)
                     <span class="layer-indicator" style="background: #8b4789; border: 2px solid #6b2f6a;"></span>
                 </li>
+                
+                <div class="filter-control">
+                    <label for="charge-filter">Filter by Charge:</label>
+                    <select id="charge-filter" multiple size="6">
+                        <option value="all" selected>All Charges</option>
+                    </select>
+                    <button class="filter-reset" id="reset-filter">Reset Filter</button>
+                </div>
             </ul>
         </aside>
         
@@ -355,41 +460,32 @@
         // ==========================================
         // SKID ROW BOUNDARY
         // ==========================================
-        // Approximate boundaries of Skid Row
-        // Roughly: 3rd St to 7th St, Alameda to Main St
-        const skidRowBoundary = {
-            "type": "Feature",
-            "properties": {
-                "name": "Skid Row",
-                "description": "Approximately 50-block area in Downtown Los Angeles"
-            },
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [[
-                    [-118.2490, 34.0475],  // Northwest corner (3rd & Main)
-                    [-118.2400, 34.0475],  // Northeast corner (3rd & Alameda)
-                    [-118.2400, 34.0373],  // Southeast corner (7th & Alameda)
-                    [-118.2490, 34.0373],  // Southwest corner (7th & Main)
-                    [-118.2490, 34.0475]   // Close the polygon
-                ]]
-            }
-        };
-        
-        L.geoJSON(skidRowBoundary, {
-            style: {
-                color: '#dc3545',
-                weight: 3,
-                opacity: 0.8,
-                fillOpacity: 0.1,
-                fillColor: '#dc3545'
-            },
-            onEachFeature: function(feature, layer) {
-                layer.bindPopup(`
-                    <div class="popup-title">${feature.properties.name}</div>
-                    <div>${feature.properties.description}</div>
-                `);
-            }
-        }).addTo(layers.skidRowBoundary);
+        // Load Skid Row boundary from GeoJSON file
+        fetch('data/SkidRow.geojson')
+            .then(response => response.json())
+            .then(skidRowData => {
+                L.geoJSON(skidRowData, {
+                    style: {
+                        color: '#dc3545',
+                        weight: 3,
+                        opacity: 0.8,
+                        fillOpacity: 0.1,
+                        fillColor: '#dc3545'
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const name = feature.properties.name || "Skid Row";
+                        const description = feature.properties.description || "Skid Row boundary area";
+                        layer.bindPopup(`
+                            <div class="popup-title">${name}</div>
+                            <div>${description}</div>
+                        `);
+                    }
+                }).addTo(layers.skidRowBoundary);
+                console.log("✓ Skid Row boundary loaded from GeoJSON");
+            })
+            .catch(error => {
+                console.error('Error loading Skid Row boundary:', error);
+            });
 
         // ==========================================
         // LOAD CSV DATA - Skid Row Community Map Points
@@ -473,6 +569,9 @@
         // ==========================================
         // LOAD ARRESTS DATA
         // ==========================================
+        let allArrestsData = [];
+        let arrestMarkers = [];
+        
         Papa.parse('data/SkidRowArrests.csv', {
             download: true,
             header: true,
@@ -480,86 +579,147 @@
             complete: function(results) {
                 console.log('Arrests CSV loaded:', results.data.length, 'records');
                 
-                // Group arrests by location to handle overlapping markers
-                const locationGroups = {};
+                // Store all arrests data for filtering
+                allArrestsData = results.data;
                 
-                results.data.forEach(function(row) {
-                    const lat = parseFloat(row['LAT']);
-                    const lon = parseFloat(row['LON']);
-                    
-                    // Skip if invalid coordinates
-                    if (isNaN(lat) || isNaN(lon)) {
-                        return;
+                // Get unique charge descriptions for dropdown
+                const chargeDescriptions = new Set();
+                allArrestsData.forEach(function(row) {
+                    const chargeDesc = row['Charge Description'];
+                    if (chargeDesc && chargeDesc.trim()) {
+                        chargeDescriptions.add(chargeDesc.trim());
                     }
-                    
-                    // Create a location key (rounded to avoid floating point issues)
-                    const locationKey = `${lat.toFixed(5)},${lon.toFixed(5)}`;
-                    
-                    if (!locationGroups[locationKey]) {
-                        locationGroups[locationKey] = {
-                            lat: lat,
-                            lon: lon,
-                            arrests: []
-                        };
-                    }
-                    
-                    locationGroups[locationKey].arrests.push({
-                        age: row['Age'],
-                        sexCode: row['Sex Code'],
-                        descentCode: row['Descent Code'],
-                        chargeGroupDesc: row['Charge Group Description'],
-                        chargeDesc: row['Charge Description'],
-                        arrestDate: row['Arrest Date']
-                    });
                 });
                 
-                // Create markers with size based on number of arrests
-                Object.values(locationGroups).forEach(function(location) {
-                    const arrestCount = location.arrests.length;
-                    
-                    // Scale marker size based on number of arrests (min 6, max 20)
-                    const markerSize = Math.min(6 + (arrestCount * 1.5), 20);
-                    
-                    // Create marker with size proportional to arrest count
-                    const marker = L.circleMarker([location.lat, location.lon], {
-                        radius: markerSize,
-                        fillColor: '#8b4789',
-                        color: '#6b2f6a',
-                        weight: 1.5,
-                        opacity: 1,
-                        fillOpacity: 0.7
+                // Populate the filter dropdown
+                const chargeFilter = document.getElementById('charge-filter');
+                Array.from(chargeDescriptions)
+                    .sort()
+                    .forEach(function(charge) {
+                        const option = document.createElement('option');
+                        option.value = charge;
+                        option.textContent = charge;
+                        chargeFilter.appendChild(option);
                     });
-                    
-                    // Build popup content with all arrests at this location
-                    let popupContent = `
-                        <div class="popup-title">Arrest Records (${arrestCount})</div>
-                        <div style="max-height: 300px; overflow-y: auto; margin-top: 8px;">
-                    `;
-                    
-                    location.arrests.forEach(function(arrest, index) {
-                        popupContent += `
-                            <div style="padding: 8px 0; ${index > 0 ? 'border-top: 1px solid #ddd;' : ''}">
-                                <strong>Record ${index + 1}:</strong><br>
-                                <strong>Age:</strong> ${arrest.age || 'N/A'}<br>
-                                <strong>Sex:</strong> ${arrest.sexCode || 'N/A'}<br>
-                                <strong>Descent:</strong> ${arrest.descentCode || 'N/A'}<br>
-                                <strong>Charge Group:</strong> ${arrest.chargeGroupDesc || 'N/A'}<br>
-                                <strong>Charge:</strong> ${arrest.chargeDesc || 'N/A'}<br>
-                                ${arrest.arrestDate ? `<strong>Date:</strong> ${arrest.arrestDate}<br>` : ''}
-                            </div>
-                        `;
-                    });
-                    
-                    popupContent += '</div>';
-                    marker.bindPopup(popupContent);
-                    marker.addTo(layers.arrests);
-                });
                 
-                console.log('Arrests data loaded successfully - ' + Object.keys(locationGroups).length + ' unique locations');
+                // Initial render with all data
+                renderArrestMarkers(allArrestsData);
+                
+                console.log('✓ Arrests data loaded and filter initialized');
             },
             error: function(error) {
                 console.error('Error loading arrests CSV:', error);
             }
+        });
+        
+        // Function to render arrest markers (used for initial load and filtering)
+        function renderArrestMarkers(data) {
+            // Clear existing markers
+            arrestMarkers.forEach(marker => layers.arrests.removeLayer(marker));
+            arrestMarkers = [];
+            
+            // Group arrests by location to handle overlapping markers
+            const locationGroups = {};
+                
+            data.forEach(function(row) {
+                const lat = parseFloat(row['LAT']);
+                const lon = parseFloat(row['LON']);
+                
+                // Skip if invalid coordinates
+                if (isNaN(lat) || isNaN(lon)) {
+                    return;
+                }
+                
+                // Create a location key (rounded to avoid floating point issues)
+                const locationKey = `${lat.toFixed(5)},${lon.toFixed(5)}`;
+                
+                if (!locationGroups[locationKey]) {
+                    locationGroups[locationKey] = {
+                        lat: lat,
+                        lon: lon,
+                        arrests: []
+                    };
+                }
+                
+                locationGroups[locationKey].arrests.push({
+                    age: row['Age'],
+                    sexCode: row['Sex Code'],
+                    descentCode: row['Descent Code'],
+                    chargeGroupDesc: row['Charge Group Description'],
+                    chargeDesc: row['Charge Description'],
+                    arrestDate: row['Arrest Date']
+                });
+            });
+            
+            // Create markers with size based on number of arrests
+            Object.values(locationGroups).forEach(function(location) {
+                const arrestCount = location.arrests.length;
+                
+                // Scale marker size based on number of arrests (min 6, max 20)
+                const markerSize = Math.min(6 + (arrestCount * 1.5), 20);
+                
+                // Create marker with size proportional to arrest count
+                const marker = L.circleMarker([location.lat, location.lon], {
+                    radius: markerSize,
+                    fillColor: '#8b4789',
+                    color: '#6b2f6a',
+                    weight: 1.5,
+                    opacity: 1,
+                    fillOpacity: 0.7
+                });
+                
+                // Build popup content with all arrests at this location
+                let popupContent = `
+                    <div class="popup-title">Arrest Records (${arrestCount})</div>
+                    <div style="max-height: 300px; overflow-y: auto; margin-top: 8px;">
+                `;
+                
+                location.arrests.forEach(function(arrest, index) {
+                    popupContent += `
+                        <div style="padding: 8px 0; ${index > 0 ? 'border-top: 1px solid #ddd;' : ''}">
+                            <strong>Record ${index + 1}:</strong><br>
+                            <strong>Age:</strong> ${arrest.age || 'N/A'}<br>
+                            <strong>Sex:</strong> ${arrest.sexCode || 'N/A'}<br>
+                            <strong>Descent:</strong> ${arrest.descentCode || 'N/A'}<br>
+                            <strong>Charge Group:</strong> ${arrest.chargeGroupDesc || 'N/A'}<br>
+                            <strong>Charge:</strong> ${arrest.chargeDesc || 'N/A'}<br>
+                            ${arrest.arrestDate ? `<strong>Date:</strong> ${arrest.arrestDate}<br>` : ''}
+                        </div>
+                    `;
+                });
+                
+                popupContent += '</div>';
+                marker.bindPopup(popupContent);
+                marker.addTo(layers.arrests);
+                arrestMarkers.push(marker);
+            });
+        }
+        
+        // Filter event listener
+        document.getElementById('charge-filter').addEventListener('change', function() {
+            const selectedOptions = Array.from(this.selectedOptions).map(opt => opt.value);
+            
+            // If "all" is selected or nothing is selected, show all
+            if (selectedOptions.includes('all') || selectedOptions.length === 0) {
+                renderArrestMarkers(allArrestsData);
+            } else {
+                // Filter data by selected charges
+                const filteredData = allArrestsData.filter(function(row) {
+                    return selectedOptions.includes(row['Charge Description']);
+                });
+                renderArrestMarkers(filteredData);
+            }
+        });
+        
+        // Reset filter button
+        document.getElementById('reset-filter').addEventListener('click', function() {
+            const chargeFilter = document.getElementById('charge-filter');
+            // Deselect all options
+            Array.from(chargeFilter.options).forEach(opt => opt.selected = false);
+            // Select "All Charges"
+            chargeFilter.options[0].selected = true;
+            // Render all markers
+            renderArrestMarkers(allArrestsData);
         });
 
         // ==========================================
@@ -570,7 +730,8 @@
         // ==========================================
         // LEGEND TOGGLE CONTROLS
         // ==========================================
-        document.querySelectorAll('#legend-list li').forEach(item => {
+        // Handle both list items (li) and grid items (div)
+        document.querySelectorAll('#legend-list li, .legend-grid-item').forEach(item => {
             item.addEventListener('click', function() {
                 const layerName = this.dataset.layer;
                 if (!layerName) return;
@@ -580,9 +741,11 @@
                 if (map.hasLayer(layer)) {
                     map.removeLayer(layer);
                     this.classList.add('disabled');
+                    this.classList.add('hidden');
                 } else {
                     map.addLayer(layer);
                     this.classList.remove('disabled');
+                    this.classList.remove('hidden');
                 }
             });
         });
