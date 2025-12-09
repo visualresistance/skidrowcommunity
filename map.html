@@ -88,10 +88,13 @@
             transition: all 0.3s ease;
             border: 2px solid #ffb3d9;
             font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .layer-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         
         #legend-list li:hover {
@@ -152,20 +155,17 @@
         }
         
         .opacity-control {
-            background: white;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 8px;
-            border: 2px solid #ffb3d9;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #ffb3d9;
         }
         
         .opacity-control label {
             display: block;
-            font-weight: bold;
+            font-weight: 600;
             color: #7b5fa7;
             margin-bottom: 8px;
-            font-size: 0.9em;
+            font-size: 0.85em;
         }
         
         .opacity-control input[type="range"] {
@@ -328,10 +328,7 @@
         <aside class="legend-panel">
             <h1 class="map-legend">Map Legend</h1>
             <div class="legend-details">
-                Click on a legend item to <strong>show</strong> or <span style="text-decoration: line-through;">hide</span> that data layer on the map.
-            </div>
-            <div class="legend-details">
-                Zoom in and click on markers for more details!
+                Click on items below to show or hide that data layer on the map.
             </div>
             
             <hr>
@@ -339,21 +336,24 @@
             <ul id="legend-list">
                 <h2 class="legend-section-header">Community Map</h2>
                 <li id="geotiff-layer" data-layer="geotiffOverlay">
-                    Community Map
-                    <span class="layer-indicator" style="background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(200,200,200,0.6) 100%); border: 1px solid #999;"></span>
+                    <div class="layer-header">
+                        <span>Community Map</span>
+                        <span class="layer-indicator" style="background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(200,200,200,0.6) 100%); border: 1px solid #999;"></span>
+                    </div>
+                    <div class="opacity-control">
+                        <label for="historical-opacity">Transparency<span class="opacity-value" id="opacity-value">70%</span></label>
+                        <input type="range" id="historical-opacity" min="0" max="100" value="70" step="5">
+                    </div>
                 </li>
-                
-                <div class="opacity-control">
-                    <label for="historical-opacity">Community Map Transparency<span class="opacity-value" id="opacity-value">70%</span></label>
-                    <input type="range" id="historical-opacity" min="0" max="100" value="70" step="5">
-                </div>
                 
                 <hr>
                 
                 <h2 class="legend-section-header">Skid Row Neighborhood</h2>
                 <li id="skid-row-boundary" data-layer="skidRowBoundary">
-                    Skid Row Boundary
-                    <span class="layer-indicator" style="background: rgba(220, 53, 69, 0.3); border: 2px solid #dc3545;"></span>
+                    <div class="layer-header">
+                        <span>Skid Row Boundary</span>
+                        <span class="layer-indicator" style="background: rgba(220, 53, 69, 0.3); border: 2px solid #dc3545;"></span>
+                    </div>
                 </li>
                 
                 <hr>
@@ -384,8 +384,10 @@
             <ul id="legend-list">
                 <h2 class="legend-section-header">Arrest Data</h2>
                 <li id="arrests" data-layer="arrests">
-                    Arrests (2021-2025)
-                    <span class="layer-indicator" style="background: #8b4789; border: 2px solid #6b2f6a;"></span>
+                    <div class="layer-header">
+                        <span>Arrests (2021-2025)</span>
+                        <span class="layer-indicator" style="background: #8b4789; border: 2px solid #6b2f6a;"></span>
+                    </div>
                 </li>
                 
                 <div class="filter-control">
