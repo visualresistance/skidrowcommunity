@@ -382,6 +382,18 @@
             <hr>
             
             <ul id="legend-list">
+                <h2 class="legend-section-header">Community Resources</h2>
+                <li id="community-resources" data-layer="communityResources">
+                    <div class="layer-header">
+                        <span>Community Resources</span>
+                        <span class="layer-indicator" style="background: #4169e1; border: 2px solid #1e4ba3;"></span>
+                    </div>
+                </li>
+            </ul>
+            
+            <hr>
+            
+            <ul id="legend-list">
                 <h2 class="legend-section-header">Arrest Data</h2>
                 <li id="arrests" data-layer="arrests">
                     <div class="layer-header">
@@ -430,6 +442,7 @@
             sanitation: L.layerGroup(),
             artLocations: L.layerGroup(),
             dangerZones: L.layerGroup(),
+            communityResources: L.layerGroup(),
             arrests: L.layerGroup()
         };
 
@@ -565,6 +578,58 @@
             error: function(error) {
                 console.error('Error loading CSV:', error);
                 console.log('Make sure your CSV file is at: data/Skid Row - LACAN - Community Map - Points.csv');
+            }
+        });
+
+        // ==========================================
+        // LOAD COMMUNITY RESOURCES DATA
+        // ==========================================
+        Papa.parse('data/Community_Resources.csv', {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                console.log('Community Resources CSV loaded:', results.data.length, 'records');
+                
+                results.data.forEach(function(row) {
+                    const lat = parseFloat(row['Latitude']);
+                    const lon = parseFloat(row['Longitude']);
+                    const name = row['Name'];
+                    const address = row['Address'];
+                    const notes = row['NOTES'];
+                    
+                    // Skip if invalid coordinates
+                    if (isNaN(lat) || isNaN(lon) || !name) {
+                        return;
+                    }
+                    
+                    // Create marker
+                    const marker = L.circleMarker([lat, lon], {
+                        radius: 8,
+                        fillColor: '#4169e1',
+                        color: '#1e4ba3',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.7
+                    });
+                    
+                    // Build popup content
+                    let popupContent = `<div class="popup-title">${name}</div>`;
+                    if (address) {
+                        popupContent += `<div style="margin-top: 5px;"><strong>Address:</strong> ${address}</div>`;
+                    }
+                    if (notes) {
+                        popupContent += `<div style="margin-top: 5px; font-style: italic; color: #666;">${notes}</div>`;
+                    }
+                    
+                    marker.bindPopup(popupContent);
+                    marker.addTo(layers.communityResources);
+                });
+                
+                console.log('✓ Community Resources loaded');
+            },
+            error: function(error) {
+                console.error('Error loading Community Resources CSV:', error);
             }
         });
 
