@@ -590,16 +590,19 @@
             skipEmptyLines: true,
             complete: function(results) {
                 console.log('Community Resources CSV loaded:', results.data.length, 'records');
+                console.log('Column names:', Object.keys(results.data[0]));
                 
                 results.data.forEach(function(row) {
-                    const lat = parseFloat(row['Latitude']);
-                    const lon = parseFloat(row['Longitude']);
-                    const name = row['Name'];
-                    const address = row['Address'];
-                    const notes = row['NOTES'];
+                    // Get the column names from the first row
+                    const columns = Object.keys(row);
+                    const name = row[columns[0]]; // Name is first column
+                    const address = row[columns[3]]; // Address is 4th column (after 2 empty columns)
+                    const lat = parseFloat(row[columns[4]]); // Latitude is 5th column
+                    const lon = parseFloat(row[columns[5]]); // Longitude is 6th column
+                    const notes = row[columns[6]]; // NOTES is 7th column
                     
-                    // Skip if invalid coordinates
-                    if (isNaN(lat) || isNaN(lon) || !name) {
+                    // Skip if invalid coordinates or no name
+                    if (isNaN(lat) || isNaN(lon) || !name || name.trim() === '') {
                         return;
                     }
                     
