@@ -391,9 +391,9 @@
                 </li>
                 
                 <div class="filter-control">
-                    <label for="charge-filter">Filter by Charge:</label>
+                    <label for="charge-filter">Filter by Charge Group:</label>
                     <select id="charge-filter" multiple size="6">
-                        <option value="all" selected>All Charges</option>
+                        <option value="all" selected>All Charge Groups</option>
                     </select>
                     <button class="filter-reset" id="reset-filter">Reset Filter</button>
                 </div>
@@ -584,10 +584,10 @@
                 // Store all arrests data for filtering
                 allArrestsData = results.data;
                 
-                // Get unique charge descriptions for dropdown
+                // Get unique charge group descriptions for dropdown
                 const chargeDescriptions = new Set();
                 allArrestsData.forEach(function(row) {
-                    const chargeDesc = row['Charge Description'];
+                    const chargeDesc = row['Charge Group Description'];
                     if (chargeDesc && chargeDesc.trim()) {
                         chargeDescriptions.add(chargeDesc.trim());
                     }
@@ -705,9 +705,9 @@
             if (selectedOptions.includes('all') || selectedOptions.length === 0) {
                 renderArrestMarkers(allArrestsData);
             } else {
-                // Filter data by selected charges
+                // Filter data by selected charge groups
                 const filteredData = allArrestsData.filter(function(row) {
-                    return selectedOptions.includes(row['Charge Description']);
+                    return selectedOptions.includes(row['Charge Group Description']);
                 });
                 renderArrestMarkers(filteredData);
             }
@@ -718,7 +718,7 @@
             const chargeFilter = document.getElementById('charge-filter');
             // Deselect all options
             Array.from(chargeFilter.options).forEach(opt => opt.selected = false);
-            // Select "All Charges"
+            // Select "All Charge Groups"
             chargeFilter.options[0].selected = true;
             // Render all markers
             renderArrestMarkers(allArrestsData);
