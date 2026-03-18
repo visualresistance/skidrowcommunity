@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<!--
+Quotes Gallery Template Page
+Site design adapted from Automating Banishment (https://automatingbanishment.org)
+Developed with assistance from GitHub Cospaces Chat and Claude AI.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quotes - A Skid Row Community Map</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin:0; background:#fafafa; }
+.page-container { display:flex; min-height:100vh; }
+.side-nav { width:280px; background:#b19cd9; color:white; padding:30px 20px; position:fixed; height:100vh; overflow-y:auto; border-right:4px solid #ffb3d9; box-shadow:2px 0 10px rgba(0,0,0,0.1); }
+.side-nav-container ul { list-style:none; padding:0; }
+.side-nav-container li { padding:10px 15px; margin:5px 0; border-radius:4px; }
+.main-content { margin-left:280px; flex:1; padding:40px 60px; }
+.top-nav { background:linear-gradient(135deg, #ffb3d9 0%, #ffd4e5 100%); padding:15px 40px; border-bottom:2px solid #ff9ec8; display:flex; gap:30px; box-shadow:0 2px 5px rgba(0,0,0,0.1); margin:-40px -60px 40px -60px; padding-left:100px; }
+.top-nav-link { color:#7b5fa7; text-decoration:none; font-weight:600; text-transform:uppercase; transition:all 0.3s ease; }
+.top-nav-link:hover { color:#9b7ac7; transform:translateY(-2px); }
+.top-nav-link.active { color:#ff006b; font-weight:700; }
+.page-title { color:#7b5fa7; margin:0 0 10px 0; font-size:2.5em; }
+.page-subtitle { color:#666; font-size:1em; margin:0 0 30px 0; max-width:760px; line-height:1.5; }
+.quotes-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:26px; margin-bottom:40px; }
+.quote-tile { background:white; border-radius:14px; box-shadow:0 4px 15px rgba(0,0,0,0.1); border:2px solid #fff; overflow:hidden; transition:all 0.3s ease; }
+.quote-tile:hover { transform:translateY(-6px); box-shadow:0 10px 24px rgba(177, 156, 217, 0.25); border-color:#ffb3d9; }
+.quote-image-slot { height:170px; background:repeating-linear-gradient(45deg, #f3ecfb, #f3ecfb 10px, #fbe8f2 10px, #fbe8f2 20px); border-bottom:2px dashed #d4b9ec; display:flex; align-items:center; justify-content:center; color:#7b5fa7; font-weight:700; letter-spacing:0.4px; font-size:0.9em; text-transform:uppercase; }
+.quote-content { padding:20px; }
+.quote-mark { color:#b19cd9; font-size:2.2em; line-height:1; margin-bottom:8px; }
+.quote-text { color:#333; font-size:1em; line-height:1.65; margin:0 0 16px 0; }
+.quote-person { color:#7b5fa7; font-weight:700; font-size:0.95em; margin:0 0 4px 0; }
+.quote-meta { color:#777; font-size:0.85em; margin:0 0 16px 0; }
+.quote-actions { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.map-link-placeholder { border:2px solid #b19cd9; color:#7b5fa7; background:#f7f1fc; border-radius:999px; padding:8px 12px; font-size:0.8em; font-weight:600; }
+.tile-status { color:#999; font-size:0.8em; }
+.template-note { margin-top:6px; color:#6b7280; font-size:0.9em; }
+@media (max-width: 900px) {
+  .side-nav { display:none; }
+  .main-content { margin-left:0; padding:24px 20px; }
+  .top-nav { margin:-24px -20px 24px -20px; padding-left:20px; gap:18px; flex-wrap:wrap; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-container">
+  <nav class="side-nav">
+    <a class="side-nav-title" href="index.html" style="text-decoration:none;">
+      <div style="text-align:center; padding:20px; background:white; border-radius:8px; border: 3px solid #ffb3d9; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <h3 style="color:#7b5fa7; margin:0;">A Skid Row Community Map</h3>
+      </div>
+    </a>
+    <div class="side-nav-container">
+      <ul>
+        <li>Quotes Template</li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <section class="top-nav">
+      <a class="top-nav-link" href="index.html">Home</a>
+      <a class="top-nav-link" href="maps.html">Maps</a>
+      <a class="top-nav-link active" href="quotes.html">Quotes</a>
+      <a class="top-nav-link" href="map.html">Interactive Map</a>
+      <a class="top-nav-link" href="assets/report.pdf">PDF Report</a>
+      <a class="top-nav-link" href="assets/summary.pdf">Summary</a>
+    </section>
+
+    <h1 class="page-title">Quotes</h1>
+    <p class="page-subtitle">Template page for individual stories. Each tile includes a photo space, quote text, and a placeholder for future map linking.</p>
+
+    <section class="quotes-grid">
+      <article class="quote-tile">
+        <div class="quote-image-slot">Image Placeholder</div>
+        <div class="quote-content">
+          <div class="quote-mark">“</div>
+          <p class="quote-text">I came here looking for stability. Every day I try to hold onto my routines and keep moving forward.</p>
+          <p class="quote-person">Participant 01</p>
+          <p class="quote-meta">Interview snippet | Year TBD</p>
+          <div class="quote-actions">
+            <span class="map-link-placeholder">Future: View on Map</span>
+            <span class="tile-status">Template Card</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="quote-tile">
+        <div class="quote-image-slot">Image Placeholder</div>
+        <div class="quote-content">
+          <div class="quote-mark">“</div>
+          <p class="quote-text">Community means knowing who is around you and who will check in when things feel uncertain.</p>
+          <p class="quote-person">Participant 02</p>
+          <p class="quote-meta">Interview snippet | Year TBD</p>
+          <div class="quote-actions">
+            <span class="map-link-placeholder">Future: View on Map</span>
+            <span class="tile-status">Template Card</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="quote-tile">
+        <div class="quote-image-slot">Image Placeholder</div>
+        <div class="quote-content">
+          <div class="quote-mark">“</div>
+          <p class="quote-text">When services are nearby, it changes what is possible in one day.</p>
+          <p class="quote-person">Participant 03</p>
+          <p class="quote-meta">Interview snippet | Year TBD</p>
+          <div class="quote-actions">
+            <span class="map-link-placeholder">Future: View on Map</span>
+            <span class="tile-status">Template Card</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="quote-tile">
+        <div class="quote-image-slot">Image Placeholder</div>
+        <div class="quote-content">
+          <div class="quote-mark">“</div>
+          <p class="quote-text">I want people to understand this place through our voices, not only through headlines.</p>
+          <p class="quote-person">Participant 04</p>
+          <p class="quote-meta">Interview snippet | Year TBD</p>
+          <div class="quote-actions">
+            <span class="map-link-placeholder">Future: View on Map</span>
+            <span class="tile-status">Template Card</span>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <p class="template-note">Template notes: replace each image slot with a portrait, update quote text and attribution, and convert the map placeholder into a real link when the interactive quote map is ready.</p>
+  </main>
+</div>
+
+</body>
+</html>

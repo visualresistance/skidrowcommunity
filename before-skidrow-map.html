@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Before Skid Row Map</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 12% 18%, rgba(255, 198, 224, 0.28), transparent 38%),
+                radial-gradient(circle at 82% 10%, rgba(177, 156, 217, 0.22), transparent 36%),
+                #f8f7fb;
+        }
+
+        .back-navigation {
+            background: linear-gradient(135deg, #aa90d8 0%, #8e6ec1 100%);
+            padding: 15px 20px;
+            color: white;
+            border-bottom: 4px solid #ffb3d9;
+            box-shadow: 0 6px 18px rgba(75, 56, 115, 0.18);
+        }
+
+        .back-navigation a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+
+        .back-navigation a:hover {
+            text-decoration: underline;
+        }
+
+        .map-container {
+            display: flex;
+            height: calc(100vh - 50px);
+        }
+
+        .legend-panel {
+            width: 320px;
+            background: linear-gradient(185deg, #ffe3ef 0%, #fff5fa 52%, #f7efff 100%);
+            overflow-y: auto;
+            padding: 22px;
+            border-right: 4px solid #ffb3d9;
+            box-shadow: 8px 0 26px rgba(77, 55, 120, 0.14);
+        }
+
+        .map-legend {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #7b5fa7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .legend-details {
+            font-size: 0.9em;
+            color: #5f546d;
+            margin-bottom: 20px;
+            line-height: 1.55;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid rgba(141, 115, 191, 0.36);
+            margin: 18px 0;
+        }
+
+        .legend-item {
+            background: rgba(255, 255, 255, 0.88);
+            padding: 12px 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 161, 207, 0.75);
+            font-weight: 600;
+            box-shadow: 0 3px 10px rgba(88, 64, 130, 0.08);
+            backdrop-filter: blur(1.5px);
+        }
+
+        .layer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .layer-indicator {
+            display: inline-block;
+            width: 30px;
+            height: 20px;
+            border-radius: 6px;
+        }
+
+        .view {
+            flex: 1;
+            position: relative;
+        }
+
+        .view::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at center, transparent 55%, rgba(66, 50, 97, 0.10) 100%);
+            z-index: 400;
+        }
+
+        #mapid {
+            height: 100%;
+            width: 100%;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.78);
+            padding: 13px;
+            margin: 15px 0;
+            border-radius: 9px;
+            border: 1px solid rgba(177, 156, 217, 0.55);
+            border-left: 4px solid #9f87d3;
+            font-size: 0.85em;
+            line-height: 1.45;
+            color: #5f4d7f;
+        }
+
+        .stat-line {
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: #5b4a7a;
+            font-weight: 600;
+        }
+
+        .leaflet-popup-content-wrapper {
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 12px 28px rgba(59, 44, 88, 0.22);
+        }
+
+        .leaflet-popup-content {
+            margin: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .popup-title {
+            font-weight: bold;
+            font-size: 16px;
+            color: #3d2f5d;
+            margin-bottom: 8px;
+        }
+
+        .leaflet-control-zoom a {
+            border-radius: 8px;
+            border: 1px solid rgba(140, 121, 181, 0.45);
+            color: #4d3b70;
+        }
+
+        .leaflet-control-zoom a:hover {
+            background: #f7f1ff;
+            color: #3f2f61;
+        }
+
+    </style>
+</head>
+<body>
+    <nav class="back-navigation">
+        <a href="maps.html">← Back to Maps Gallery</a>
+    </nav>
+
+    <div class="map-container">
+        <aside class="legend-panel">
+            <h1 class="map-legend">Before Skid Row</h1>
+            <div class="legend-details">
+                Approximate places people reported living before arriving in Skid Row. Thin routes flow back toward a single Skid Row anchor.
+            </div>
+
+            <hr>
+
+            <div class="legend-item">
+                <div class="layer-header">
+                    <span>Origin locations</span>
+                    <span class="layer-indicator" style="background: #f59e0b; border: 2px solid #b45309;"></span>
+                </div>
+            </div>
+
+            <div class="legend-item">
+                <div class="layer-header">
+                    <span>Routes to Skid Row</span>
+                    <span class="layer-indicator" style="background: #4f46e5; border: 2px solid #3730a3;"></span>
+                </div>
+            </div>
+
+            <div class="legend-item">
+                <div class="layer-header">
+                    <span>Skid Row anchor</span>
+                    <span class="layer-indicator" style="background: #dc2626; border: 2px solid #991b1b;"></span>
+                </div>
+            </div>
+
+            <div class="info-box" id="data-summary">
+                Loading origin data...
+            </div>
+            <div class="stat-line" id="route-count"></div>
+        </aside>
+
+        <main class="view">
+            <div id="mapid"></div>
+        </main>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- PapaParse for CSV loading -->
+    <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+
+    <script>
+        const SKID_ROW = { lat: 34.043926, lon: -118.242432 };
+
+        // Initialize map with a wider frame so regional origins are visible.
+        const map = L.map('mapid').setView([34.0424, -118.2451], 9);
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors, © CARTO',
+            maxZoom: 19,
+            subdomains: 'abcd'
+        }).addTo(map);
+
+        const routesLayer = L.layerGroup().addTo(map);
+        const originsLayer = L.layerGroup().addTo(map);
+
+        const skidRowMarker = L.circleMarker([SKID_ROW.lat, SKID_ROW.lon], {
+            radius: 8,
+            fillColor: '#dc2626',
+            color: '#991b1b',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.9
+        }).bindPopup('<div class="popup-title">Skid Row</div><div>Central City East, Los Angeles</div>');
+
+        skidRowMarker.addTo(originsLayer);
+
+        L.circle([SKID_ROW.lat, SKID_ROW.lon], {
+            radius: 1900,
+            color: '#d946ef',
+            weight: 1,
+            opacity: 0.22,
+            fillOpacity: 0
+        }).addTo(routesLayer);
+
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        Papa.parse('data/before_skidrow.csv', {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                const rows = results.data || [];
+                let plottedCount = 0;
+                let skippedCount = 0;
+
+                const bounds = L.latLngBounds([[SKID_ROW.lat, SKID_ROW.lon]]);
+
+                rows.forEach(function(row) {
+                    const lat = parseFloat(row.latitude);
+                    const lon = parseFloat(row.longitude);
+
+                    if (isNaN(lat) || isNaN(lon)) {
+                        skippedCount += 1;
+                        return;
+                    }
+
+                    const original = row.original || 'Unlabeled location';
+                    const normalized = row.normalized || '';
+
+                    const originMarker = L.circleMarker([lat, lon], {
+                        radius: 5,
+                        fillColor: '#f59e0b',
+                        color: '#b45309',
+                        weight: 1,
+                        opacity: 1,
+                        fillOpacity: 0.85
+                    });
+
+                    let popupContent = '<div class="popup-title">' + escapeHtml(original) + '</div>';
+                    if (normalized) {
+                        popupContent += '<div><strong>Normalized:</strong> ' + escapeHtml(normalized) + '</div>';
+                    }
+                    popupContent += '<div style="margin-top:6px; color:#4f46e5;"><strong>Direction:</strong> toward Skid Row</div>';
+
+                    originMarker.bindPopup(popupContent);
+                    originMarker.addTo(originsLayer);
+
+                    const routeLine = L.polyline(
+                        [[lat, lon], [SKID_ROW.lat, SKID_ROW.lon]],
+                        {
+                            color: '#c7c1fb',
+                            weight: 2.4,
+                            opacity: 0.25
+                        }
+                    );
+                    routeLine.addTo(routesLayer);
+
+                    const routeCore = L.polyline(
+                        [[lat, lon], [SKID_ROW.lat, SKID_ROW.lon]],
+                        {
+                            color: '#4f46e5',
+                            weight: 1.1,
+                            opacity: 0.62
+                        }
+                    );
+                    routeCore.addTo(routesLayer);
+
+                    bounds.extend([lat, lon]);
+                    plottedCount += 1;
+                });
+
+                map.fitBounds(bounds, { padding: [40, 40] });
+
+                document.getElementById('data-summary').textContent =
+                    'Origins with coordinates are plotted. Locations without coordinates are currently skipped.';
+                document.getElementById('route-count').textContent =
+                    plottedCount + ' routes shown | ' + skippedCount + ' records missing coordinates';
+
+                console.log('Before Skid Row loaded:', plottedCount, 'routes', skippedCount, 'skipped');
+            },
+            error: function(error) {
+                console.error('Error loading before_skidrow.csv:', error);
+                document.getElementById('data-summary').textContent =
+                    'Could not load origin data. Confirm data/before_skidrow.csv exists and has latitude/longitude columns.';
+            }
+        });
+    </script>
+</body>
+</html>

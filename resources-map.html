@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skid Row Community Resources Map</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            background: #fafafa;
+        }
+        
+        .back-navigation {
+            background: linear-gradient(135deg, #b19cd9 0%, #9b7ac7 100%);
+            padding: 15px 20px;
+            color: white;
+            border-bottom: 4px solid #ffb3d9;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .back-navigation a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .back-navigation a:hover {
+            text-decoration: underline;
+        }
+        
+        .map-container {
+            display: flex;
+            height: calc(100vh - 50px);
+        }
+        
+        .legend-panel {
+            width: 280px;
+            background: linear-gradient(180deg, #ffd4e5 0%, #fff0f5 100%);
+            overflow-y: auto;
+            padding: 20px;
+            border-right: 4px solid #ffb3d9;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .map-legend {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #7b5fa7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .legend-details {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        hr {
+            border: none;
+            border-top: 2px solid #ffb3d9;
+            margin: 15px 0;
+        }
+        
+        .legend-item {
+            background: white;
+            padding: 12px 15px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border: 2px solid #ffb3d9;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .layer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .layer-indicator {
+            display: inline-block;
+            width: 30px;
+            height: 20px;
+            border-radius: 3px;
+        }
+        
+        .view {
+            flex: 1;
+            position: relative;
+        }
+        
+        #mapid {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .info-box {
+            background: #fff0f5;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 4px;
+            border-left: 4px solid #b19cd9;
+            font-size: 0.85em;
+            line-height: 1.4;
+            color: #7b5fa7;
+        }
+        
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        .leaflet-popup-content {
+            margin: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .popup-title {
+            font-weight: bold;
+            font-size: 16px;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="back-navigation">
+        <a href="maps.html">← Back to Maps Gallery</a>
+    </nav>
+    
+    <div class="map-container">
+        <aside class="legend-panel">
+            <h1 class="map-legend">Community Resources</h1>
+            <div class="legend-details">
+                Community resources and services available in Skid Row.
+            </div>
+            
+            <hr>
+            
+            <div class="legend-item">
+                <div class="layer-header">
+                    <span>Resources</span>
+                    <span class="layer-indicator" style="background: #4169e1; border: 2px solid #1e4ba3;"></span>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                Click on any resource location to see more details including address and notes.
+            </div>
+        </aside>
+        
+        <main class="view">
+            <div id="mapid"></div>
+        </main>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- PapaParse for CSV loading -->
+    <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+    
+    <script>
+        // Initialize map centered on Skid Row
+        const map = L.map('mapid').setView([34.0424, -118.2451], 15);
+
+        // Add CartoDB Positron (minimal light basemap)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors, © CARTO',
+            maxZoom: 19,
+            subdomains: 'abcd'
+        }).addTo(map);
+
+        // Create layer group for resources
+        const resourcesLayer = L.layerGroup();
+        resourcesLayer.addTo(map);
+
+        // Load Community Resources CSV
+        Papa.parse('data/Community_Resources.csv', {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                console.log('Community Resources CSV loaded:', results.data.length, 'records');
+                
+                results.data.forEach(function(row) {
+                    // Get the column names from the first row
+                    const columns = Object.keys(row);
+                    const name = row[columns[0]]; // Name is first column
+                    const address = row[columns[3]]; // Address is 4th column
+                    const lat = parseFloat(row[columns[4]]); // Latitude is 5th column
+                    const lon = parseFloat(row[columns[5]]); // Longitude is 6th column
+                    const notes = row[columns[6]]; // NOTES is 7th column
+                    
+                    // Skip if invalid coordinates or no name
+                    if (isNaN(lat) || isNaN(lon) || !name || name.trim() === '') {
+                        return;
+                    }
+                    
+                    // Create marker
+                    const marker = L.circleMarker([lat, lon], {
+                        radius: 8,
+                        fillColor: '#4169e1',
+                        color: '#1e4ba3',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.7
+                    });
+                    
+                    // Build popup content
+                    let popupContent = `<div class="popup-title">${name}</div>`;
+                    if (address) {
+                        popupContent += `<div style="margin-top: 5px;"><strong>Address:</strong> ${address}</div>`;
+                    }
+                    if (notes) {
+                        popupContent += `<div style="margin-top: 5px; font-style: italic; color: #666;">${notes}</div>`;
+                    }
+                    
+                    marker.bindPopup(popupContent);
+                    marker.addTo(resourcesLayer);
+                });
+                
+                console.log('✓ Community Resources loaded');
+            },
+            error: function(error) {
+                console.error('Error loading Community Resources CSV:', error);
+                alert('Error loading community resources data');
+            }
+        });
+
+        // Fit map to Skid Row area
+        setTimeout(function() {
+            const bounds = L.latLngBounds([
+                [34.0373, -118.2490],
+                [34.0475, -118.2400]
+            ]);
+            map.fitBounds(bounds, { padding: [50, 50] });
+        }, 300);
+    </script>
+</body>
+</html>

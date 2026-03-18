@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skid Row Community Points Map</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            background: #fafafa;
+        }
+        
+        .back-navigation {
+            background: linear-gradient(135deg, #b19cd9 0%, #9b7ac7 100%);
+            padding: 15px 20px;
+            color: white;
+            border-bottom: 4px solid #ffb3d9;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .back-navigation a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .back-navigation a:hover {
+            text-decoration: underline;
+        }
+        
+        .map-container {
+            display: flex;
+            height: calc(100vh - 50px);
+        }
+        
+        .legend-panel {
+            width: 280px;
+            background: linear-gradient(180deg, #ffd4e5 0%, #fff0f5 100%);
+            overflow-y: auto;
+            padding: 20px;
+            border-right: 4px solid #ffb3d9;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .map-legend {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #7b5fa7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .legend-details {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        hr {
+            border: none;
+            border-top: 2px solid #ffb3d9;
+            margin: 15px 0;
+        }
+        
+        .legend-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .legend-grid-item {
+            background: white;
+            border: 2px solid;
+            border-radius: 8px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 0.75em;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .legend-grid-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .legend-grid-item.disabled {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
+        
+        .view {
+            flex: 1;
+            position: relative;
+        }
+        
+        #mapid {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .info-box {
+            background: #fff0f5;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 4px;
+            border-left: 4px solid #b19cd9;
+            font-size: 0.85em;
+            line-height: 1.4;
+            color: #7b5fa7;
+        }
+        
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        .leaflet-popup-content {
+            margin: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .popup-title {
+            font-weight: bold;
+            font-size: 16px;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="back-navigation">
+        <a href="maps.html">← Back to Maps Gallery</a>
+    </nav>
+    
+    <div class="map-container">
+        <aside class="legend-panel">
+            <h1 class="map-legend">Community Points</h1>
+            <div class="legend-details">
+                Community points and categories from Summer 2025 survey.
+            </div>
+            
+            <hr>
+            
+            <h3 style="color: #7b5fa7; font-size: 0.95em; margin-bottom: 10px;">Click items to toggle visibility:</h3>
+            
+            <div class="legend-grid">
+                <div class="legend-grid-item" id="police-surveillance" data-layer="policeSurveillance" 
+                     style="background: #ff6600; border-color: #cc5200; color: white;">
+                    Police & State Violence
+                </div>
+                <div class="legend-grid-item" id="sanitation" data-layer="sanitation" 
+                     style="background: #ffff00; border-color: #cccc00; color: #333;">
+                    Sanitation
+                </div>
+                <div class="legend-grid-item" id="art-locations" data-layer="artLocations" 
+                     style="background: #90ee90; border-color: #5cb85c; color: #333;">
+                    Art & Culture
+                </div>
+                <div class="legend-grid-item" id="danger-zones" data-layer="dangerZones" 
+                     style="background: #ff0000; border-color: #cc0000; color: white;">
+                    Danger Zones
+                </div>
+            </div>
+            
+            <div class="info-box">
+                Click on any point to see more details about that location.
+            </div>
+        </aside>
+        
+        <main class="view">
+            <div id="mapid"></div>
+        </main>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- PapaParse for CSV loading -->
+    <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+    
+    <script>
+        // Initialize map centered on Skid Row
+        const map = L.map('mapid').setView([34.0424, -118.2451], 15);
+
+        // Add CartoDB Positron (minimal light basemap)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors, © CARTO',
+            maxZoom: 19,
+            subdomains: 'abcd'
+        }).addTo(map);
+
+        // Create layer groups for each category
+        const layers = {
+            policeSurveillance: L.layerGroup(),
+            sanitation: L.layerGroup(),
+            artLocations: L.layerGroup(),
+            dangerZones: L.layerGroup()
+        };
+
+        // Add all layers to map by default
+        Object.values(layers).forEach(layer => map.addLayer(layer));
+
+        // Define color mapping for categories
+        const categoryColors = {
+            'Orange': '#ff6600',
+            'Yellow': '#ffff00',
+            'Lime Green': '#90ee90',
+            'Red': '#ff0000'
+        };
+        
+        const categoryToLayer = {
+            'Orange': 'policeSurveillance',
+            'Yellow': 'sanitation',
+            'Lime Green': 'artLocations',
+            'Red': 'dangerZones'
+        };
+        
+        // Load CSV file
+        Papa.parse('data/Skid Row - LACAN - Community Map - Points.csv', {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                console.log('CSV loaded successfully:', results.data.length, 'points');
+                
+                results.data.forEach(function(row) {
+                    const lat = parseFloat(row['Latitude ']);
+                    const lon = parseFloat(row['Longitude']);
+                    const title = row['Title'];
+                    const category = row['Category'] ? row['Category'].trim() : '';
+                    const description = row['Description'];
+                    const comments = row['Comments'];
+                    
+                    // Skip if invalid coordinates
+                    if (isNaN(lat) || isNaN(lon)) {
+                        return;
+                    }
+                    
+                    // Get color and layer for this category
+                    const color = categoryColors[category] || '#999999';
+                    const layerName = categoryToLayer[category];
+                    
+                    if (layerName && layers[layerName]) {
+                        // Create marker
+                        const marker = L.circleMarker([lat, lon], {
+                            radius: 9,
+                            fillColor: color,
+                            color: '#000',
+                            weight: 2,
+                            opacity: 1,
+                            fillOpacity: 0.8
+                        });
+                        
+                        // Create popup content
+                        let popupContent = `<div class="popup-title">${title}</div>`;
+                        if (description) {
+                            popupContent += `<div style="margin-top: 8px;"><strong>${description}</strong></div>`;
+                        }
+                        if (comments) {
+                            popupContent += `<div style="margin-top: 5px; color: #666; font-style: italic;">${comments}</div>`;
+                        }
+                        popupContent += `<div style="margin-top: 8px; font-size: 12px; color: #999; padding-top: 5px; border-top: 1px solid #eee;">Category: ${category}</div>`;
+                        
+                        marker.bindPopup(popupContent);
+                        marker.addTo(layers[layerName]);
+                    }
+                });
+                
+                console.log('✓ Community points loaded');
+            },
+            error: function(error) {
+                console.error('Error loading CSV:', error);
+                alert('Error loading community points data');
+            }
+        });
+
+        // Fit map to Skid Row area
+        setTimeout(function() {
+            const bounds = L.latLngBounds([
+                [34.0373, -118.2490],
+                [34.0475, -118.2400]
+            ]);
+            map.fitBounds(bounds, { padding: [50, 50] });
+        }, 300);
+
+        // Legend toggle controls
+        document.querySelectorAll('.legend-grid-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const layerName = this.dataset.layer;
+                if (!layerName) return;
+                
+                const layer = layers[layerName];
+                
+                if (map.hasLayer(layer)) {
+                    map.removeLayer(layer);
+                    this.classList.add('disabled');
+                } else {
+                    map.addLayer(layer);
+                    this.classList.remove('disabled');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
