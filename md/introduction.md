@@ -1,16 +1,5 @@
 # Introduction
 
-This project, **A Skid Row Community Map**, is a community-based research initiative designed to document and visualize patterns in Skid Row. It brings together data from multiple sources to create an interactive mapping tool that reveals social, cultural, and infrastructural dynamics in the neighborhood.
+This project site, **Mapping Care, Survival, and Displacement**, directly supports the 2026 Women’s Needs Assessment report with maps and visualizations that make women’s experiences in Skid Row visible. Rooted in lived testimony and community knowledge, it shows how structural barriers, displacement, and prolonged homelessness shape women’s lives—and points toward housing, health, and safety solutions grounded in dignity and care.
 
-This report begins with an introduction that explains the context and goals of this mapping project, then continues in several parts:
 
-- Background & History
-- Data Analysis
-- Case Studies
-- Impact & Implications
-- Recommendations
-- Get Involved
-
-> "Add a powerful opening quote that captures the essence of your project and its mission."
->
-> — Author Name
