@@ -1,1 +1,4 @@
 
+This website draws on the 2026 Women’s Needs Assessment report to visualize the conditions shaping women’s lives in Skid Row. It translates findings from the report into maps and data that highlight how policy, enforcement, and structural inequality shape pathways into and experiences of homelessness. Together, these visualizations make visible patterns that are often overlooked and support calls for housing, safety, and long-term stability.
+
+One starting point for this website project was taking a community map made during the summer of 2025 by members of DWAC and other women living on Skid Row and digitizing the findings and making it accessible online. In order to make this map more powerful other layers of data, especially LAPD arrest data, was overlayed in order to see how Skid Row was a space of both institutional criminalization and community resilience.
