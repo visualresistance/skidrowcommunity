@@ -1,1 +1,1 @@
-
+Using LAPD arrest records from 2020 to 2025, this project examines how policing is concentrated in Skid Row. Rather than treating data as neutral, these visualizations reveal how arrest records are used to criminalize survival and justify displacement. When layered onto a community-created map, the data shows that policing clusters in the very spaces where women are forced to live and where community care networks already exist, making visible how enforcement targets presence rather than addressing underlying conditions.
