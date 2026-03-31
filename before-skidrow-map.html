@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>if(new URLSearchParams(location.search).get('thumbnail')==='1')document.documentElement.classList.add('thumbnail-mode');</script>
     <title>Before Skid Row Map</title>
 
     <!-- Leaflet CSS -->
@@ -174,6 +175,14 @@
             color: #3f2f61;
         }
 
+        html.thumbnail-mode .back-navigation,
+        html.thumbnail-mode .legend-panel,
+        html.thumbnail-mode .leaflet-control-container,
+        html.thumbnail-mode .leaflet-popup-pane,
+        html.thumbnail-mode .view::before { display: none; }
+        html.thumbnail-mode .map-container { height: 100vh; }
+        html.thumbnail-mode .view { width: 100%; }
+
     </style>
 </head>
 <body>
@@ -229,10 +238,22 @@
     <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
 
     <script>
+        const isThumbnailMode = document.documentElement.classList.contains('thumbnail-mode');
+
         const SKID_ROW = { lat: 34.043926, lon: -118.242432 };
 
         // Initialize map with a wider frame so regional origins are visible.
-        const map = L.map('mapid').setView([34.0424, -118.2451], 9);
+        const map = L.map('mapid', {
+            attributionControl: !isThumbnailMode,
+            zoomControl: !isThumbnailMode,
+            dragging: !isThumbnailMode,
+            scrollWheelZoom: !isThumbnailMode,
+            doubleClickZoom: !isThumbnailMode,
+            boxZoom: !isThumbnailMode,
+            keyboard: !isThumbnailMode,
+            touchZoom: !isThumbnailMode,
+            tap: !isThumbnailMode
+        }).setView([34.0424, -118.2451], 9);
 
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
             attribution: '© OpenStreetMap contributors, © CARTO',

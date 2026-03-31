@@ -9,6 +9,7 @@ Developed with assistance from GitHub Cospaces Chat and Claude AI.
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Maps Gallery - A Skid Row Community Map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
 /* Colorful and bright color palette */
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin:0; background:#fafafa; }
@@ -25,12 +26,30 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .top-nav-link.active { color:#ff006b; font-weight:700; }
 .page-title { color:#7b5fa7; margin:0 0 40px 0; font-size: 2.5em; }
 .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 40px; }
-.map-tile { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s ease; cursor: pointer; border: 2px solid #fff; }
+.map-tile { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s ease; cursor: pointer; border: 2px solid #fff; color: inherit; text-decoration: none; display: block; }
 .map-tile:hover { transform: translateY(-8px); box-shadow: 0 8px 25px rgba(177, 156, 217, 0.25); border-color: #ffb3d9; }
-.map-tile-image { width: 100%; height: 220px; background: linear-gradient(135deg, #ffd4e5 0%, #e6d4f0 100%); display: flex; align-items: center; justify-content: center; font-size: 2em; color: #b19cd9; font-weight: bold; }
+.map-tile:focus-visible { outline: 3px solid #ff006b; outline-offset: 4px; }
+.map-tile-image {
+  width: 100%;
+  height: 220px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ffd4e5 0%, #e6d4f0 100%);
+}
+.map-preview { width: 100%; height: 100%; }
+/* Block pointer events so clicks pass through to the tile <a> */
+.map-preview .leaflet-container { pointer-events: none; }
 .map-tile-content { padding: 25px; }
 .map-tile-title { color:#7b5fa7; font-size: 1.3em; font-weight:bold; margin:0 0 12px 0; }
 .map-tile-description { color:#666; font-size: 0.95em; line-height: 1.5; margin:0; }
+
+@media (max-width: 768px) {
+  .main-content { margin-left: 0; padding: 24px; }
+  .side-nav { position: static; width: 100%; height: auto; }
+  .page-container { display: block; }
+  .top-nav { margin: 0 0 30px 0; padding: 15px 24px; padding-left: 24px; flex-wrap: wrap; }
+  .page-title { font-size: 2em; }
+}
 </style>
 </head>
 <body>
@@ -66,61 +85,196 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 
     <div class="gallery-grid">
       <!-- Map 1: Skid Row Boundaries -->
-      <div class="map-tile" onclick="window.location.href='boundaries-map.html'" style="cursor: pointer;">
-        <div class="map-tile-image">🗺️</div>
+      <a class="map-tile" href="boundaries-map.html">
+        <div class="map-tile-image">
+          <div id="preview-1" class="map-preview" aria-hidden="true"></div>
+        </div>
         <div class="map-tile-content">
           <h3 class="map-tile-title">Skid Row Boundaries</h3>
           <p class="map-tile-description">Geographic boundaries defining the Skid Row neighborhood in Los Angeles.</p>
         </div>
-      </div>
+      </a>
 
       <!-- Map 2: Skid Row Community Map Summer 2025 -->
-      <div class="map-tile" onclick="window.location.href='community-map.html'" style="cursor: pointer;">
-        <div class="map-tile-image">🗺️</div>
+      <a class="map-tile" href="community-map.html">
+        <div class="map-tile-image">
+          <div id="preview-2" class="map-preview" aria-hidden="true"></div>
+        </div>
         <div class="map-tile-content">
           <h3 class="map-tile-title">Skid Row Community Map Summer 2025</h3>
           <p class="map-tile-description">Community-curated map showing organizations, services, and key locations in the area.</p>
         </div>
-      </div>
+      </a>
 
       <!-- Map 3: Skid Row Community Points Summer 2025 -->
-      <div class="map-tile" onclick="window.location.href='community-points-map.html'" style="cursor: pointer;">
-        <div class="map-tile-image">🗺️</div>
+      <a class="map-tile" href="community-points-map.html">
+        <div class="map-tile-image">
+          <div id="preview-3" class="map-preview" aria-hidden="true"></div>
+        </div>
         <div class="map-tile-content">
           <h3 class="map-tile-title">Skid Row Community Points Summer 2025</h3>
           <p class="map-tile-description">Detailed point data of community resources and services mapped across Skid Row.</p>
         </div>
-      </div>
+      </a>
 
       <!-- Map 4: Skid Row LAPD Arrest Data -->
-      <div class="map-tile" onclick="window.location.href='arrest-map.html'" style="cursor: pointer;">
-        <div class="map-tile-image">🗺️</div>
+      <a class="map-tile" href="arrest-map.html">
+        <div class="map-tile-image">
+          <div id="preview-4" class="map-preview" aria-hidden="true"></div>
+        </div>
         <div class="map-tile-content">
           <h3 class="map-tile-title">Skid Row LAPD Arrest Data</h3>
           <p class="map-tile-description">Visualization of arrest locations and patterns across the Skid Row neighborhood.</p>
         </div>
-      </div>
+      </a>
 
       <!-- Map 5: Skid Row Community Resources -->
-      <div class="map-tile" onclick="window.location.href='resources-map.html'" style="cursor: pointer;">
-        <div class="map-tile-image">🗺️</div>
+      <a class="map-tile" href="resources-map.html">
+        <div class="map-tile-image">
+          <div id="preview-5" class="map-preview" aria-hidden="true"></div>
+        </div>
         <div class="map-tile-content">
           <h3 class="map-tile-title">Skid Row Community Resources</h3>
           <p class="map-tile-description">Comprehensive mapping of available community resources and support services.</p>
         </div>
-      </div>
+      </a>
 
       <!-- Map 6: Before Skid Row -->
-      <div class="map-tile" onclick="window.location.href='before-skidrow-map.html'" style="cursor: pointer;">
-        <div class="map-tile-image">↩️</div>
+      <a class="map-tile" href="before-skidrow-map.html">
+        <div class="map-tile-image">
+          <div id="preview-6" class="map-preview" aria-hidden="true"></div>
+        </div>
         <div class="map-tile-content">
           <h3 class="map-tile-title">Before Skid Row</h3>
           <p class="map-tile-description">Places people lived before arriving in Skid Row, connected with thin route lines back to Skid Row.</p>
         </div>
-      </div>
+      </a>
     </div>
   </main>
 </div>
 
 </body>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+<script>
+const SKID_ROW = [34.0424, -118.2451];
+const SKID_ROW_ANCHOR = [34.043926, -118.242432];
+
+function miniMap(id, center, zoom) {
+  return L.map(id, {
+    zoomControl: false, attributionControl: false,
+    dragging: false, scrollWheelZoom: false,
+    doubleClickZoom: false, boxZoom: false,
+    keyboard: false, touchZoom: false, tap: false
+  }).setView(center, zoom);
+}
+
+function baseLayer() {
+  return L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19, subdomains: 'abcd'
+  });
+}
+
+// --- Map 1: Skid Row Boundaries ---
+const m1 = miniMap('preview-1', SKID_ROW, 14);
+baseLayer().addTo(m1);
+fetch('data/SkidRow.geojson')
+  .then(r => r.json())
+  .then(d => {
+    L.geoJSON(d, {
+      style: { color: '#dc3545', weight: 3, opacity: 0.8, fillColor: '#dc3545', fillOpacity: 0.15 }
+    }).addTo(m1);
+  });
+
+// --- Map 2: Community Map (scanned tile overlay) ---
+const m2 = miniMap('preview-2', SKID_ROW, 15);
+baseLayer().addTo(m2);
+L.tileLayer('data/tiles/{z}/{x}/{y}.png', {
+  minZoom: 10, maxZoom: 18, opacity: 0.85, tms: true
+}).addTo(m2);
+
+// --- Map 3: Community Points ---
+const m3 = miniMap('preview-3', SKID_ROW, 15);
+baseLayer().addTo(m3);
+const categoryColors = { Orange: '#ff6600', Yellow: '#bbbb00', Green: '#5cb85c', Red: '#ff0000' };
+Papa.parse('data/Skid Row - LACAN - Community Map - Points.csv', {
+  download: true, header: true, skipEmptyLines: true,
+  complete: function(results) {
+    results.data.forEach(function(row) {
+      const lat = parseFloat(row['Latitude '] || row['Latitude']);
+      const lon = parseFloat(row['Longitude']);
+      if (isNaN(lat) || isNaN(lon)) return;
+      const color = categoryColors[row['Category']] || '#b19cd9';
+      L.circleMarker([lat, lon], {
+        radius: 5, fillColor: color, color: '#fff', weight: 1, fillOpacity: 0.9
+      }).addTo(m3);
+    });
+  }
+});
+
+// --- Map 4: LAPD Arrest Data ---
+const m4 = miniMap('preview-4', SKID_ROW, 15);
+baseLayer().addTo(m4);
+Papa.parse('data/SkidRowArrests.csv', {
+  download: true, header: true, skipEmptyLines: true,
+  complete: function(results) {
+    const counts = {};
+    results.data.forEach(function(row) {
+      const lat = parseFloat(row['LAT']);
+      const lon = parseFloat(row['LON']);
+      if (isNaN(lat) || isNaN(lon)) return;
+      const key = lat.toFixed(4) + ',' + lon.toFixed(4);
+      if (!counts[key]) counts[key] = { lat, lon, n: 0 };
+      counts[key].n++;
+    });
+    Object.values(counts).forEach(function(loc) {
+      L.circleMarker([loc.lat, loc.lon], {
+        radius: Math.min(2 + Math.sqrt(loc.n), 10),
+        fillColor: '#8b4789', color: '#6b2f6a', weight: 1, fillOpacity: 0.7
+      }).addTo(m4);
+    });
+  }
+});
+
+// --- Map 5: Community Resources ---
+const m5 = miniMap('preview-5', SKID_ROW, 15);
+baseLayer().addTo(m5);
+Papa.parse('data/Community_Resources.csv', {
+  download: true, header: true, skipEmptyLines: true,
+  complete: function(results) {
+    results.data.forEach(function(row) {
+      const cols = Object.keys(row);
+      const lat = parseFloat(row[cols[4]]);
+      const lon = parseFloat(row[cols[5]]);
+      if (isNaN(lat) || isNaN(lon)) return;
+      L.circleMarker([lat, lon], {
+        radius: 6, fillColor: '#4169e1', color: '#1e4ba3', weight: 1.5, fillOpacity: 0.85
+      }).addTo(m5);
+    });
+  }
+});
+
+// --- Map 6: Before Skid Row ---
+const m6 = miniMap('preview-6', [34.5, -118.8], 8);
+baseLayer().addTo(m6);
+Papa.parse('data/before_skidrow.csv', {
+  download: true, header: true, skipEmptyLines: true,
+  complete: function(results) {
+    results.data.forEach(function(row) {
+      const lat = parseFloat(row['latitude']);
+      const lon = parseFloat(row['longitude']);
+      if (isNaN(lat) || isNaN(lon)) return;
+      L.polyline([[lat, lon], SKID_ROW_ANCHOR], {
+        color: '#4f46e5', weight: 1, opacity: 0.45
+      }).addTo(m6);
+      L.circleMarker([lat, lon], {
+        radius: 4, fillColor: '#f59e0b', color: '#b45309', weight: 1, fillOpacity: 0.85
+      }).addTo(m6);
+    });
+    L.circleMarker(SKID_ROW_ANCHOR, {
+      radius: 7, fillColor: '#dc2626', color: '#991b1b', weight: 2, fillOpacity: 1
+    }).addTo(m6);
+  }
+});
+</script>
 </html>

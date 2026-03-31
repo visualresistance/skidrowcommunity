@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>if(new URLSearchParams(location.search).get('thumbnail')==='1')document.documentElement.classList.add('thumbnail-mode');</script>
     <title>Skid Row Community Map</title>
     
     <!-- Leaflet CSS -->
@@ -187,6 +188,13 @@
             color: #2c3e50;
             margin-bottom: 8px;
         }
+
+        html.thumbnail-mode .back-navigation,
+        html.thumbnail-mode .legend-panel,
+        html.thumbnail-mode .leaflet-control-container,
+        html.thumbnail-mode .leaflet-popup-pane { display: none; }
+        html.thumbnail-mode .map-container { height: 100vh; }
+        html.thumbnail-mode .view { width: 100%; }
     </style>
 </head>
 <body>
@@ -228,8 +236,20 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script>
+        const isThumbnailMode = document.documentElement.classList.contains('thumbnail-mode');
+
         // Initialize map centered on Skid Row
-        const map = L.map('mapid').setView([34.0424, -118.2451], 15);
+        const map = L.map('mapid', {
+            attributionControl: !isThumbnailMode,
+            zoomControl: !isThumbnailMode,
+            dragging: !isThumbnailMode,
+            scrollWheelZoom: !isThumbnailMode,
+            doubleClickZoom: !isThumbnailMode,
+            boxZoom: !isThumbnailMode,
+            keyboard: !isThumbnailMode,
+            touchZoom: !isThumbnailMode,
+            tap: !isThumbnailMode
+        }).setView([34.0424, -118.2451], 15);
 
         // Add CartoDB Positron (minimal light basemap)
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
