@@ -21,15 +21,31 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .top-nav { background: linear-gradient(135deg, #ffb3d9 0%, #ffd4e5 100%); padding:15px 40px; border-bottom:2px solid #ff9ec8; display:flex; gap:30px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 .top-nav-link { color:#7b5fa7; text-decoration:none; font-weight:600; text-transform:uppercase; transition: all 0.3s ease; }
 .top-nav-link:hover { color:#9b7ac7; transform: translateY(-2px); }
+.report-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:9999; align-items:center; justify-content:center; }
+.report-modal-overlay.open { display:flex; }
+.report-modal { background:white; border-radius:14px; box-shadow:0 16px 48px rgba(0,0,0,0.35); padding:36px 32px; max-width:460px; width:90%; text-align:center; position:relative; }
+.report-modal img { width:100%; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.15); margin-bottom:20px; }
+.report-modal-title { color:#7b5fa7; font-size:1.2em; font-weight:700; margin:0 0 8px 0; }
+.report-modal-close { position:absolute; top:14px; right:18px; background:none; border:none; font-size:1.4em; color:#999; cursor:pointer; line-height:1; }
+.report-modal-close:hover { color:#7b5fa7; }
 </style>
 </head>
 <body>
+
+<div class="report-modal-overlay" id="reportModal" onclick="closeReportModal(event)">
+  <div class="report-modal">
+    <button class="report-modal-close" onclick="document.getElementById('reportModal').classList.remove('open')" aria-label="Close">&times;</button>
+    <img src="data/frontcoverwomensreport.jpeg" alt="Front cover of the Women's Report">
+    <p class="report-modal-title">Full report coming soon.</p>
+  </div>
+</div>
 
 <div class="page-container">
   <nav class="side-nav">
     <a class="side-nav-title" href="index.html">
       <div style="text-align:center; padding:20px; background:white; border-radius:8px; border: 3px solid #ffb3d9; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-        <h3 style="color:#7b5fa7; margin:0;">A Skid Row Community Map</h3>
+        <p style="color:#7b5fa7; margin:0; font-size:0.9em; font-weight:700; line-height:1.45;">Mapping Care, Survival, and Displacement</p>
+        <p style="color:#a08bc4; margin:6px 0 0 0; font-size:0.75em; line-height:1.4;">A companion site for the 2026 Women's Needs Assessment Report</p>
       </div>
     </a>
     <div class="side-nav-container">
@@ -47,8 +63,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
       <a class="top-nav-link" href="maps.html">Maps</a>
       <a class="top-nav-link" href="quotes.html">Quotes</a>
       <a class="top-nav-link" href="map.html">Interactive Map</a>
-      <a class="top-nav-link" href="assets/report.pdf">PDF Report</a>
-      <a class="top-nav-link" href="assets/summary.pdf">Summary</a>
+      <a class="top-nav-link" href="#" onclick="openReportModal(event)">PDF Report</a>
     </section>
 
     <div id="md-content">
@@ -85,6 +100,18 @@ navItems.forEach(item => {
     const mdFile = item.dataset.md;
     loadMD(mdFile);
   });
+});
+function openReportModal(e) {
+  e.preventDefault();
+  document.getElementById('reportModal').classList.add('open');
+}
+function closeReportModal(e) {
+  if (e.target === document.getElementById('reportModal')) {
+    document.getElementById('reportModal').classList.remove('open');
+  }
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') document.getElementById('reportModal').classList.remove('open');
 });
 </script>
 </body>
